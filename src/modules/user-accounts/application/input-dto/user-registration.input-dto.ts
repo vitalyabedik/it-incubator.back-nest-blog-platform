@@ -1,6 +1,5 @@
-export class CreateUserInputDto {
+export class UserRegistrationInputDto {
   login: string;
   password: string;
   email: string;
-  age: number;
 }

@@ -1,9 +1,12 @@
 import { Injectable } from '@nestjs/common';
-import bcrypt from 'bcrypt';
 import { InjectModel } from '@nestjs/mongoose';
+import { DomainException } from '../../../core/exceptions/domain-exceptions';
+import { EDomainExceptionCode } from '../../../core/exceptions/domain-exception-codes';
 import { User, TUserModel } from '../domain/user.entity';
 import { CreateUserDto } from '../dto/create-user.dto';
 import { UsersRepository } from '../infrastructure/users.repository';
+import { CryptoService } from './crypto.service';
+import { errorMessages } from '../constants/texts';
 
 @Injectable()
 export class UsersService {
@@ -11,10 +14,22 @@ export class UsersService {
     @InjectModel(User.name)
     private UserModel: TUserModel,
     private usersRepository: UsersRepository,
+    private cryptoService: CryptoService,
   ) {}
 
   async createUser(dto: CreateUserDto): Promise<string> {
-    const passwordHash = await bcrypt.hash(dto.password, 10);
+    const userExistenceCheck = await this.UserModel.checkIsUserExist(dto);
+
+    if (userExistenceCheck.isExist) {
+      throw new DomainException({
+        code: EDomainExceptionCode.BadRequest,
+        message: errorMessages.uniqueLogin,
+      });
+    }
+
+    const passwordHash = await this.cryptoService.createPasswordHash(
+      dto.password,
+    );
 
     const user = this.UserModel.createInstance({
       email: dto.email,

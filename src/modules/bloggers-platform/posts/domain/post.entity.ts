@@ -6,6 +6,7 @@ import {
 } from '../../likes/domain/likes-count-info.schema';
 import { CreatePostInputDto } from '../api/input-dto/posts.create-input-dto';
 import { UpdatePostInputDto } from '../api/input-dto/posts.update-input-dto';
+import { errorMessages } from '../constants/texts';
 
 /**
  * Схема сущности Post
@@ -132,7 +133,7 @@ export class Post {
    */
   softDelete(): void {
     if (this.deletedAt !== null) {
-      throw new Error('Entity already deleted');
+      throw new Error(errorMessages.alreadyDeleted);
     }
 
     this.deletedAt = new Date();
