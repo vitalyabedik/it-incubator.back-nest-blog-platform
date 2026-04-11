@@ -2,6 +2,7 @@ import { HydratedDocument, Model } from 'mongoose';
 import { Schema, Prop, SchemaFactory } from '@nestjs/mongoose';
 import { CreateBlogInputDto } from '../api/input-dto/blogs.create-input-dto';
 import { UpdateBlogInputDto } from '../api/input-dto/blogs.update-input-dto';
+import { errorMessages } from '../constants/texts';
 
 /**
  * Схема сущности Blog
@@ -106,7 +107,7 @@ export class Blog {
    */
   softDelete(): void {
     if (this.deletedAt !== null) {
-      throw new Error('Entity already deleted');
+      throw new Error(errorMessages.alreadyDeleted);
     }
 
     this.deletedAt = new Date();

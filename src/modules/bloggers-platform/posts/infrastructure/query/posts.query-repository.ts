@@ -1,6 +1,8 @@
 import { InjectModel } from '@nestjs/mongoose';
-import { Inject, Injectable, NotFoundException } from '@nestjs/common';
+import { Inject, Injectable } from '@nestjs/common';
 import { PaginatedViewDto } from '../../../../../core/dto/base.paginated.view-dto';
+import { DomainException } from '../../../../../core/exceptions/domain-exceptions';
+import { EDomainExceptionCode } from '../../../../../core/exceptions/domain-exception-codes';
 import { LikesRepository } from '../../../likes/infrastructure/likes.repository';
 import { TLikeDocument } from '../../../likes/domain/like.entity';
 import { ELikeStatus } from '../../../likes/constants/like-status';
@@ -91,7 +93,10 @@ export class PostsQueryRepository {
     }).exec();
 
     if (!post) {
-      throw new NotFoundException(errorMessages.notFound);
+      throw new DomainException({
+        code: EDomainExceptionCode.NotFound,
+        message: errorMessages.notFound,
+      });
     }
 
     const myStatusPromise = userId

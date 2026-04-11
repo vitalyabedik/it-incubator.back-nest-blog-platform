@@ -1,5 +1,7 @@
 import { InjectModel } from '@nestjs/mongoose';
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
+import { DomainException } from '../../../../core/exceptions/domain-exceptions';
+import { EDomainExceptionCode } from '../../../../core/exceptions/domain-exception-codes';
 import { errorMessages } from '../constants/texts';
 import { Post, TPostDocument, TPostModel } from '../domain/post.entity';
 
@@ -14,7 +16,10 @@ export class PostsRepository {
     }).exec();
 
     if (!post) {
-      throw new NotFoundException(errorMessages.notFound);
+      throw new DomainException({
+        code: EDomainExceptionCode.NotFound,
+        message: errorMessages.notFound,
+      });
     }
 
     return post;
