@@ -10,21 +10,28 @@ import {
   Put,
   Query,
 } from '@nestjs/common';
+import { CommandBus, QueryBus } from '@nestjs/cqrs';
 import { ApiParam } from '@nestjs/swagger';
+
 import { routersPaths } from '../../../../core/constants/paths';
 import { PaginatedViewDto } from '../../../../core/dto/base.paginated.view-dto';
 import { ID_PARAMETER } from '../../../../core/constants/params';
 
-import { PostsService } from '../../posts/application/posts.service';
-import { PostsQueryRepository } from '../../posts/infrastructure/query/posts.query-repository';
 import { GetPostsQueryParams } from '../../posts/api/input-dto/get-posts-query-params.input-dto';
-import { PostViewDto } from '../../posts/api/view-dto/posts.view-dto';
+import { PostViewDto } from '../../posts/application/view-dto/posts.view-dto';
 import { CreatePostInputDto } from '../../posts/api/input-dto/posts.create-input-dto';
+import { GetPostListByBlogIdQuery } from '../../posts/application/queries/get-post-list-by-blogId.query-handler';
+import { CreatePostCommand } from '../../posts/application/usecases/create-post.usecase';
+import { GetPostByIdQuery } from '../../posts/application/queries/get-post-by-id.query-handler';
 
-import { BlogsService } from '../application/blogs.service';
-import { BlogsRepository } from '../infrastructure/blogs.repository';
-import { BlogsQueryRepository } from '../infrastructure/query/blogs.query-repository';
-import { BlogViewDto } from './view-dto/blogs.view-dto';
+import { BlogViewDto } from '../application/view-dto/blogs.view-dto';
+import { GetBlogByIdQuery } from '../application/queries/get-blog-by-id.query-handler';
+import { GetBlogListQuery } from '../application/queries/get-blog-list.query-handler';
+import { FindBlogByIdQuery } from '../application/queries/find-blog-by-id.query-handler';
+import { CreateBlogCommand } from '../application/usecases/create-blog.usecase';
+import { UpdateBlogCommand } from '../application/usecases/update-blog.usecase';
+import { DeleteBlogCommand } from '../application/usecases/delete-blog.usecase';
+import { TBlogDocument } from '../domain/blog.entity';
 import { GetBlogsQueryParams } from './input-dto/get-blogs-query-params.input-dto';
 import { CreateBlogInputDto } from './input-dto/blogs.create-input-dto';
 import { UpdateBlogInputDto } from './input-dto/blogs.update-input-dto';
@@ -32,11 +39,8 @@ import { UpdateBlogInputDto } from './input-dto/blogs.update-input-dto';
 @Controller(routersPaths.blogs.root)
 export class BlogsController {
   constructor(
-    private blogsService: BlogsService,
-    private postsService: PostsService,
-    private blogsRepository: BlogsRepository,
-    private blogsQueryRepository: BlogsQueryRepository,
-    private postsQueryRepository: PostsQueryRepository,
+    private readonly queryBus: QueryBus,
+    private readonly commandBus: CommandBus,
   ) {
     console.log('BlogsController created');
   }
@@ -45,19 +49,28 @@ export class BlogsController {
   async getBlogList(
     @Query() query: GetBlogsQueryParams,
   ): Promise<PaginatedViewDto<BlogViewDto[]>> {
-    return this.blogsQueryRepository.getBlogList(query);
+    return this.queryBus.execute<
+      GetBlogListQuery,
+      PaginatedViewDto<BlogViewDto[]>
+    >(new GetBlogListQuery(query));
   }
 
   @Get(routersPaths.byId)
   async getBlogById(@Param(ID_PARAMETER) id: string): Promise<BlogViewDto> {
-    return this.blogsQueryRepository.getBlogById(id);
+    return this.queryBus.execute<GetBlogByIdQuery, BlogViewDto>(
+      new GetBlogByIdQuery(id),
+    );
   }
 
   @Post()
   async createBlog(@Body() body: CreateBlogInputDto): Promise<BlogViewDto> {
-    const blogId = await this.blogsService.createBlog(body);
+    const blogId = await this.commandBus.execute<CreateBlogCommand, string>(
+      new CreateBlogCommand(body),
+    );
 
-    return this.blogsQueryRepository.getBlogById(blogId);
+    return this.queryBus.execute<GetBlogByIdQuery, BlogViewDto>(
+      new GetBlogByIdQuery(blogId),
+    );
   }
 
   @ApiParam({ name: ID_PARAMETER })
@@ -67,14 +80,18 @@ export class BlogsController {
     @Param(ID_PARAMETER) id: string,
     @Body() body: UpdateBlogInputDto,
   ): Promise<void> {
-    return this.blogsService.updateBlog(id, body);
+    return this.commandBus.execute<UpdateBlogCommand, void>(
+      new UpdateBlogCommand(id, body),
+    );
   }
 
   @ApiParam({ name: ID_PARAMETER })
   @Delete(routersPaths.byId)
   @HttpCode(HttpStatus.NO_CONTENT)
   async deleteBlog(@Param(ID_PARAMETER) id: string): Promise<void> {
-    return this.blogsService.deleteBlog(id);
+    return this.commandBus.execute<DeleteBlogCommand, void>(
+      new DeleteBlogCommand(id),
+    );
   }
 
   @Get(`${routersPaths.byId}/${routersPaths.posts.root}`)
@@ -82,12 +99,19 @@ export class BlogsController {
     @Param(ID_PARAMETER) id: string,
     @Query() query: GetPostsQueryParams,
   ): Promise<PaginatedViewDto<PostViewDto[]>> {
-    await this.blogsRepository.findBlogById(id);
+    await this.queryBus.execute<FindBlogByIdQuery, TBlogDocument>(
+      new FindBlogByIdQuery(id),
+    );
 
-    return this.postsQueryRepository.getPostListByBlogId({
-      blogId: id,
-      query,
-    });
+    return this.queryBus.execute<
+      GetPostListByBlogIdQuery,
+      PaginatedViewDto<PostViewDto[]>
+    >(
+      new GetPostListByBlogIdQuery({
+        blogId: id,
+        query,
+      }),
+    );
   }
 
   @Post(`${routersPaths.byId}/${routersPaths.posts.root}`)
@@ -95,10 +119,12 @@ export class BlogsController {
     @Param(ID_PARAMETER) id: string,
     @Body() body: CreatePostInputDto,
   ): Promise<PostViewDto> {
-    const postId = await this.postsService.createPost({ ...body, blogId: id });
+    const postId = await this.commandBus.execute<CreatePostCommand, string>(
+      new CreatePostCommand({ ...body, blogId: id }),
+    );
 
-    return this.postsQueryRepository.getPostById({
-      postId,
-    });
+    return this.queryBus.execute<GetPostByIdQuery, PostViewDto>(
+      new GetPostByIdQuery({ postId }),
+    );
   }
 }

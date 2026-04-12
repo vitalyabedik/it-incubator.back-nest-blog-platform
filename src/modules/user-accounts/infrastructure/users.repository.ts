@@ -65,7 +65,9 @@ export class UsersRepository {
     return user;
   }
 
-  async findUserByPasswordRecoveryCode(code: string) {
+  async findUserByPasswordRecoveryCode(
+    code: string,
+  ): Promise<TUserDocument | null> {
     const user = await this.UserModel.findOne({
       'passwordRecovery.code': code,
       deletedAt: null,

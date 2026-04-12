@@ -22,10 +22,10 @@ export class LikesRepository {
     private LikeModel: TLikeModel,
   ) {}
 
-  async getLikeListForUser({
+  async findLikeListForUser({
     authorId,
     parentIds,
-  }: GetLikeListRepositoryParams) {
+  }: GetLikeListRepositoryParams): Promise<TLikeDocument[]> {
     return this.LikeModel.find({
       parentId: { $in: parentIds },
       authorId,
@@ -34,18 +34,22 @@ export class LikesRepository {
       .exec();
   }
 
-  async getMyStatus({ parentId, authorId }: GetLikeMyStatusRepositoryParams) {
+  async findMyLikeStatus({
+    parentId,
+    authorId,
+  }: GetLikeMyStatusRepositoryParams): Promise<ELikeStatus> {
     const like = await this.LikeModel.findOne({ parentId, authorId })
       .lean()
       .exec();
+    if (!like) return ELikeStatus.None;
 
-    return like?.status || ELikeStatus.None;
+    return like.status;
   }
 
-  async getNewestLikeList({
+  async findNewestLikeList({
     parentId,
     limit = DEFAULT_LIKES_LIMIT_COUNT,
-  }: GetLikeListNewestRepositoryParams) {
+  }: GetLikeListNewestRepositoryParams): Promise<TLikeDocument[]> {
     return this.LikeModel.find({ parentId, status: ELikeStatus.Like })
       .sort({ addedLikeDate: -1 })
       .limit(limit)
@@ -53,29 +57,41 @@ export class LikesRepository {
       .exec();
   }
 
-  async getNewestLikeListForParents({
+  async findNewestLikeListForParents({
     parentIds,
     limit = DEFAULT_LIKES_LIMIT_COUNT,
-  }: GetLikeListNewestForParentsRepositoryParams) {
-    return this.LikeModel.aggregate<TNewestLikesAggregationResult>([
-      {
-        $match: {
-          parentId: { $in: parentIds },
-          status: ELikeStatus.Like,
+  }: GetLikeListNewestForParentsRepositoryParams): Promise<
+    Map<string, TLikeDocument[]>
+  > {
+    const map = new Map<string, TLikeDocument[]>();
+
+    const likes = await this.LikeModel.aggregate<TNewestLikesAggregationResult>(
+      [
+        {
+          $match: {
+            parentId: { $in: parentIds },
+            status: ELikeStatus.Like,
+          },
         },
-      },
-      {
-        $group: {
-          _id: '$parentId',
-          newestLikes: {
-            $topN: {
-              n: limit,
-              sortBy: { addedLikeDate: -1 },
-              output: '$$ROOT',
+        {
+          $group: {
+            _id: '$parentId',
+            newestLikes: {
+              $topN: {
+                n: limit,
+                sortBy: { addedLikeDate: -1 },
+                output: '$$ROOT',
+              },
             },
           },
         },
-      },
-    ]);
+      ],
+    );
+
+    likes.forEach((item) => {
+      map.set(item._id.toString(), item.newestLikes);
+    });
+
+    return map;
   }
 }

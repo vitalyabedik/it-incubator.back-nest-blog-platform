@@ -1,4 +1,4 @@
-import { ExecutionContext, Injectable } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import {
   ThrottlerGuard,
   type ThrottlerModuleOptions,
@@ -27,7 +27,7 @@ export class AppThrottleGuard extends ThrottlerGuard {
     super(options, storageService, reflector);
   }
 
-  protected async throwThrottlingException(_: ExecutionContext): Promise<void> {
+  protected async throwThrottlingException(): Promise<void> {
     throw new DomainException({
       code: EDomainExceptionCode.TooManyRequests,
       message: TOO_MANY_REQUESTS_ERROR_MESSAGE,

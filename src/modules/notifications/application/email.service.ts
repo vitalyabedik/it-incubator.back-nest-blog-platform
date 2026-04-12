@@ -1,9 +1,13 @@
 import { MailerService } from '@nestjs-modules/mailer';
 import { Injectable } from '@nestjs/common';
+import { EmailTemplates } from './email.templates';
 
 @Injectable()
 export class EmailService {
-  constructor(private mailerService: MailerService) {}
+  constructor(
+    private mailerService: MailerService,
+    private emailTemplates: EmailTemplates,
+  ) {}
 
   async sendRegistrationConfirmationCode(dto: {
     email: string;
@@ -13,10 +17,9 @@ export class EmailService {
       .sendMail({
         to: dto.email,
         subject: 'Подтверждение регистрации',
-        html: `<div>
-                  <h1>Please confirm your email</h1>
-                  <p>You should follow the link:   <a href='https://somesite.com/confirm-email?code=${dto.confirmationCode}'>complete registration</a></p>
-            </div>`,
+        html: this.emailTemplates.registrationConfirmation(
+          dto.confirmationCode,
+        ),
       })
       .catch((err) => console.log(err));
   }
@@ -26,10 +29,7 @@ export class EmailService {
       .sendMail({
         to: dto.email,
         subject: 'Восстановление пароля',
-        html: `<div>
-                  <h1>Password recovery</h1>
-                  <p>You should follow the link:   <a href='https://somesite.com/recovery-password?code=${dto.recoveryCode}'>recovery password</a></p>
-            </div>`,
+        html: this.emailTemplates.recoveryPassword(dto.recoveryCode),
       })
       .catch((err) => console.log(err));
   }

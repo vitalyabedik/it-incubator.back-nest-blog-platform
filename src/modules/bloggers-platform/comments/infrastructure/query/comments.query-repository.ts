@@ -1,10 +1,12 @@
 import { InjectModel } from '@nestjs/mongoose';
-import { Inject, Injectable } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
+
 import { PaginatedViewDto } from '../../../../../core/dto/base.paginated.view-dto';
-import { ELikeStatus } from '../../../likes/constants/like-status';
 import { LikesRepository } from '../../../likes/infrastructure/likes.repository';
+import { ELikeStatus } from '../../../likes/constants/like-status';
+
 import { TCommentModel, Comment } from '../../domain/comment.entity';
-import { CommentViewDto } from '../../api/view-dto/comments.view-dto';
+import { CommentViewDto } from '../../application/view-dto/comments.view-dto';
 import { GetCommentsListQueryRepositoryParams } from './input-dto/get-comments-list.query-repository.input-dto';
 
 @Injectable()
@@ -12,7 +14,7 @@ export class CommentsQueryRepository {
   constructor(
     @InjectModel(Comment.name)
     private CommentModel: TCommentModel,
-    @Inject() private likesRepository: LikesRepository,
+    private likesRepository: LikesRepository,
   ) {}
 
   async getCommentListByPostId({
@@ -39,7 +41,7 @@ export class CommentsQueryRepository {
     if (userId && comments.length > 0) {
       const commentsIds = comments.map((c) => c._id.toString());
 
-      const userLikes = await this.likesRepository.getLikeListForUser({
+      const userLikes = await this.likesRepository.findLikeListForUser({
         parentIds: commentsIds,
         authorId: userId,
       });
