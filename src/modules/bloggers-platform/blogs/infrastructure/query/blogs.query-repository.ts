@@ -6,7 +6,7 @@ import { EDomainExceptionCode } from '../../../../../core/exceptions/domain-exce
 import { errorMessages } from '../../constants/texts';
 import { Blog, TBlogModel } from '../../domain/blog.entity';
 import { GetBlogsQueryParams } from '../../api/input-dto/get-blogs-query-params.input-dto';
-import { BlogViewDto } from '../../api/view-dto/blogs.view-dto';
+import { BlogViewDto } from '../../application/view-dto/blogs.view-dto';
 
 @Injectable()
 export class BlogsQueryRepository {

@@ -17,6 +17,9 @@ export class CreateBlogInputDto {
   })
   description: string;
 
+  @IsStringWithTrim({
+    maxLength: webSiteUrlConstraints.maxLength,
+  })
   @Matches(webSiteUrlConstraints.match)
   websiteUrl: string;
 }

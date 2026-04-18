@@ -3,7 +3,6 @@ import {
   ValidationError,
   ValidationPipe,
 } from '@nestjs/common';
-import { ObjectIdValidationTransformationPipe } from '../core/pipes/object-id-validation-transformation-pipe.service';
 import { EDomainExceptionCode } from '../core/exceptions/domain-exception-codes';
 import {
   DomainException,
@@ -42,7 +41,6 @@ export const errorFormatter = (errors: ValidationError[]): Extension[] => {
 
 export function pipesSetup(app: INestApplication) {
   app.useGlobalPipes(
-    new ObjectIdValidationTransformationPipe(),
     new ValidationPipe({
       transform: true,
       whitelist: true,

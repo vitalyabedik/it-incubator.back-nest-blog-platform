@@ -2,6 +2,7 @@ import { Module } from '@nestjs/common';
 import { MongooseModule } from '@nestjs/mongoose';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { APP_FILTER } from '@nestjs/core';
+import { CqrsModule } from '@nestjs/cqrs';
 import { TestingModule } from './modules/testing/testing.module';
 import { UserAccountsModule } from './modules/user-accounts/user-accounts.module';
 import { BloggersPlatformModule } from './modules/bloggers-platform/bloggers-platform.module';
@@ -14,6 +15,7 @@ import { DomainHttpExceptionsFilter } from './core/exceptions/filters/domain-exc
 
 @Module({
   imports: [
+    CqrsModule.forRoot(),
     ConfigModule.forRoot({ isGlobal: true }),
     MongooseModule.forRootAsync({
       useFactory: getMongooseConfig,

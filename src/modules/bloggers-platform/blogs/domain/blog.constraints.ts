@@ -7,5 +7,6 @@ export const descriptionConstraints = {
 };
 
 export const webSiteUrlConstraints = {
+  maxLength: 100,
   match: /^https:\/\/([a-zA-Z0-9_-]+\.)+[a-zA-Z0-9_-]+(\/[a-zA-Z0-9_-]+)*\/?$/,
 };

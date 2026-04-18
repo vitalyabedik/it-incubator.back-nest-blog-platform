@@ -4,6 +4,8 @@ import {
   LikesCountInfo,
   LikesCountInfoSchema,
 } from '../../likes/domain/likes-count-info.schema';
+import { TLikeDocument } from '../../likes/domain/like.entity';
+import { ELikeStatus } from '../../likes/constants/like-status';
 import { CreatePostInputDto } from '../api/input-dto/posts.create-input-dto';
 import { UpdatePostInputDto } from '../api/input-dto/posts.update-input-dto';
 import { errorMessages } from '../constants/texts';
@@ -122,6 +124,57 @@ export class Post {
     this.title = dto.title;
     this.shortDescription = dto.shortDescription;
     this.content = dto.content;
+
+    return this;
+  }
+
+  /**
+   * Обновляет информацию о лайках поста на основе нового статуса и лайка
+   * @param {ELikeStatus} likeStatus - Новый статус лайка
+   * @returns {Post} Текущий экземпляр поста для chain-вызовов
+   */
+  updatePostLikesByIncomingLikeStatusAndLike(args: {
+    like: TLikeDocument;
+    likeStatus: ELikeStatus;
+  }) {
+    const { like, likeStatus } = args;
+
+    const oldStatus = like.status;
+    const newStatus = likeStatus;
+
+    if (oldStatus === ELikeStatus.Like) {
+      this.likesInfo.likesCount -= 1;
+    } else if (oldStatus === ELikeStatus.Dislike) {
+      this.likesInfo.dislikesCount -= 1;
+    }
+
+    if (newStatus === ELikeStatus.Like) {
+      this.likesInfo.likesCount += 1;
+    } else if (newStatus === ELikeStatus.Dislike) {
+      this.likesInfo.dislikesCount += 1;
+    }
+
+    this.likesInfo.likesCount = Math.max(0, this.likesInfo.likesCount);
+    this.likesInfo.dislikesCount = Math.max(0, this.likesInfo.dislikesCount);
+
+    like.status = newStatus;
+
+    return this;
+  }
+
+  /**
+   * Обновляет информацию о лайках поста только на основе нового статуса
+   * @param {ELikeStatus} likeStatus - Новый статус лайка
+   * @returns {Post} Текущий экземпляр поста для chain-вызовов
+   */
+  updatePostLikesByIncomingLikeStatus(likeStatus: ELikeStatus) {
+    if (likeStatus === ELikeStatus.Like) {
+      this.likesInfo.likesCount += 1;
+    }
+
+    if (likeStatus === ELikeStatus.Dislike) {
+      this.likesInfo.dislikesCount += 1;
+    }
 
     return this;
   }
