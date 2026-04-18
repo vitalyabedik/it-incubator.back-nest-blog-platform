@@ -1,8 +1,8 @@
 import { MongooseModule } from '@nestjs/mongoose';
 import { Module } from '@nestjs/common';
-import { JwtModule } from '@nestjs/jwt';
+import { JwtModule, JwtService } from '@nestjs/jwt';
 import { ThrottlerModule } from '@nestjs/throttler';
-import { CqrsModule } from '@nestjs/cqrs';
+import { ConfigModule, ConfigService } from '@nestjs/config';
 import { NotificationsModule } from '../notifications/notifications.module';
 import { User, UserSchema } from './domain/user.entity';
 import { UsersController } from './api/users.controller';
@@ -31,6 +31,10 @@ import { RegisterConfirmationUserUseCase } from './application/usecases/register
 import { RegisterEmailResendingUserUseCase } from './application/usecases/register-email-resending-user.usecase';
 import { RegisterUserUseCase } from './application/usecases/register-user.usecase';
 import { UsersFactory } from './application/factories/users.factory';
+import {
+  ACCESS_TOKEN_STRATEGY_INJECT_TOKEN,
+  REFRESH_TOKEN_STRATEGY_INJECT_TOKEN,
+} from 'src/core/constants/tokens';
 
 const commandHandlers = [
   CreateUserUseCase,
@@ -55,10 +59,10 @@ const queryHandlers = [
 @Module({
   imports: [
     MongooseModule.forFeature([{ name: User.name, schema: UserSchema }]),
-    JwtModule.register({}),
     ThrottlerModule.forRoot({ throttlers: [{ ttl: 10000, limit: 5 }] }),
+    ConfigModule,
     NotificationsModule,
-    CqrsModule,
+    JwtModule,
   ],
   controllers: [AuthController, UsersController],
   providers: [
@@ -71,9 +75,44 @@ const queryHandlers = [
     CryptoService,
     BearerAuthGuard,
     UsersFactory,
+    {
+      provide: ACCESS_TOKEN_STRATEGY_INJECT_TOKEN,
+      useFactory: (configService: ConfigService): JwtService => {
+        const secret = configService.getOrThrow<string>('AC_SECRET');
+
+        const expiresIn = configService.getOrThrow<number>('AC_TIME');
+        console.log('expiresIn', expiresIn);
+
+        return new JwtService({
+          secret,
+          signOptions: { expiresIn },
+        });
+      },
+      inject: [ConfigService],
+    },
+    {
+      provide: REFRESH_TOKEN_STRATEGY_INJECT_TOKEN,
+      useFactory: (configService: ConfigService): JwtService => {
+        const secret = configService.getOrThrow<string>('RT_SECRET');
+
+        const expiresIn = configService.getOrThrow<number>('RT_TIME');
+
+        return new JwtService({
+          secret,
+          signOptions: { expiresIn },
+        });
+      },
+      inject: [ConfigService],
+    },
     ...commandHandlers,
     ...queryHandlers,
   ],
-  exports: [UsersExternalService, UsersExternalQueryRepository],
+  exports: [
+    UsersExternalService,
+    UsersExternalQueryRepository,
+    BearerAuthGuard,
+    ACCESS_TOKEN_STRATEGY_INJECT_TOKEN,
+    REFRESH_TOKEN_STRATEGY_INJECT_TOKEN,
+  ],
 })
 export class UserAccountsModule {}

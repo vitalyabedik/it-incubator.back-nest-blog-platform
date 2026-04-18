@@ -5,17 +5,18 @@ import {
   HttpCode,
   HttpStatus,
   Post,
-  UseGuards,
+  Res,
 } from '@nestjs/common';
-import { CommandBus, QueryBus } from '@nestjs/cqrs';
+import { CommandBus } from '@nestjs/cqrs';
 import { SkipThrottle } from '@nestjs/throttler';
 import { ApiBearerAuth } from '@nestjs/swagger';
+import { type Response } from 'express';
 
 import { routersPaths } from '../../../core/constants/paths';
 import { AppThrottle } from '../../../core/decorators/throttle/app-throttle';
 
 import { ExtractUserFromRequest } from '../guards/decorators/param/extract-user-from-request.decorator';
-import { BearerAuthGuard } from '../guards/bearer/bearer-auth.guard';
+import { UseBearerGuard } from '../guards/decorators/use-bearer-guard.decorator';
 import {
   LoginUserCommand,
   TLoginUserCommandOutput,
@@ -36,20 +37,24 @@ import { UserFromRequestDataInputDto } from './input-dto/user-from-request-data-
 @AppThrottle()
 @Controller(routersPaths.auth.root)
 export class AuthController {
-  constructor(
-    private readonly commandBus: CommandBus,
-    private readonly queryBus: QueryBus,
-  ) {
+  constructor(private readonly commandBus: CommandBus) {
     console.log('AuthController created');
   }
 
   @Post(routersPaths.auth.login)
   @SkipThrottle()
   @HttpCode(HttpStatus.OK)
-  async login(@Body() dto: AuthLoginInputDto) {
-    return this.commandBus.execute<LoginUserCommand, TLoginUserCommandOutput>(
-      new LoginUserCommand(dto),
-    );
+  async login(@Body() dto: AuthLoginInputDto, @Res() response: Response) {
+    const { accessToken, refreshToken } = await this.commandBus.execute<
+      LoginUserCommand,
+      TLoginUserCommandOutput
+    >(new LoginUserCommand(dto));
+
+    response.cookie('refreshToken', refreshToken, {
+      httpOnly: true,
+      secure: true,
+    });
+    response.send({ accessToken });
   }
 
   @Post(routersPaths.auth.passwordRecovery)
@@ -99,7 +104,7 @@ export class AuthController {
   @Get(routersPaths.auth.me)
   @SkipThrottle()
   @ApiBearerAuth('bearerAuth')
-  @UseGuards(BearerAuthGuard)
+  @UseBearerGuard()
   async me(@ExtractUserFromRequest() dto: UserFromRequestDataInputDto) {
     return dto;
   }

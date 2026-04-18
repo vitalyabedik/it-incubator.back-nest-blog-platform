@@ -15,6 +15,7 @@ import { DomainHttpExceptionsFilter } from './core/exceptions/filters/domain-exc
 
 @Module({
   imports: [
+    CqrsModule.forRoot(),
     ConfigModule.forRoot({ isGlobal: true }),
     MongooseModule.forRootAsync({
       useFactory: getMongooseConfig,
@@ -24,7 +25,6 @@ import { DomainHttpExceptionsFilter } from './core/exceptions/filters/domain-exc
     BloggersPlatformModule,
     TestingModule,
     CoreModule,
-    CqrsModule,
   ],
   controllers: [AppController],
   providers: [

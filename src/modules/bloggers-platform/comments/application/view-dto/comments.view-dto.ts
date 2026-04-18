@@ -1,7 +1,12 @@
 import { ELikeStatus } from '../../../likes/constants/like-status';
 import { TCommentDocument } from '../../domain/comment.entity';
 
-class CommentatorInfo {
+type TMapToViewArgs = {
+  comment: TCommentDocument;
+  myStatus: ELikeStatus;
+};
+
+export class CommentatorInfo {
   userId: string;
   userLogin: string;
 }
@@ -19,10 +24,7 @@ export class CommentViewDto {
   createdAt: string;
   likesInfo: LikesInfo;
 
-  static mapToView(
-    comment: TCommentDocument,
-    myStatus: ELikeStatus,
-  ): CommentViewDto {
+  static mapToView({ comment, myStatus }: TMapToViewArgs): CommentViewDto {
     const dto = new CommentViewDto();
 
     dto.id = comment._id.toString();

@@ -1,6 +1,7 @@
 import { HydratedDocument, Model } from 'mongoose';
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { ELikeStatus } from '../constants/like-status';
+import { CreateLikeDomainDto } from './input-dto/create-like.domain.dto';
 
 /**
  * Схема сущности Like
@@ -75,6 +76,37 @@ export class Like {
   get id(): string {
     // @ts-ignore
     return this._id.toString();
+  }
+
+  /**
+   * Фабричный метод для создания экземпляра Like
+   * Создаёт новый документ Like на основе DTO.
+   * @param {CreateLikeDomainDto} dto - DTO для создания лайка
+   * @returns {TLikeDocument} Созданный документ лайка
+   */
+  static createInstance(dto: CreateLikeDomainDto): TLikeDocument {
+    const like = new this();
+
+    like.authorId = dto.authorId;
+    like.login = dto.login;
+    like.parentId = dto.parentId;
+    like.status = dto.status;
+    like.addedLikeDate = dto.status === ELikeStatus.Like ? new Date() : null;
+    like.deletedAt = null;
+
+    return like as TLikeDocument;
+  }
+
+  /**
+   * Обновляет статус лайка
+   * Автоматически устанавливает или очищает addedLikeDate в зависимости от нового статуса
+   * @param {ELikeStatus} newStatus - Новый статус лайка
+   * @returns {Like} Текущий экземпляр лайка для chain-вызовов
+   */
+  updateLikeStatus(newStatus: ELikeStatus): this {
+    this.status = newStatus;
+
+    return this;
   }
 }
 

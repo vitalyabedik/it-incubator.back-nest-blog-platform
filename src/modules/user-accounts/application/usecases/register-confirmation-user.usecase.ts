@@ -1,9 +1,8 @@
 import { CommandHandler, ICommandHandler, QueryBus } from '@nestjs/cqrs';
-import { InjectModel } from '@nestjs/mongoose';
 import { DomainException } from '../../../../core/exceptions/domain-exceptions';
 import { EDomainExceptionCode } from '../../../../core/exceptions/domain-exception-codes';
 import { errorMessages } from '../../constants/texts';
-import { TUserDocument, User } from '../../domain/user.entity';
+import { TUserDocument } from '../../domain/user.entity';
 import { EAuthValidationField } from '../../constants/errors';
 import { UsersRepository } from '../../infrastructure/users.repository';
 import { UserRegistrationConfirmationInputDto } from '../input-dto/user-registration-confirmation.input-dto';
@@ -19,7 +18,6 @@ export class RegisterConfirmationUserUseCase implements ICommandHandler<
   boolean
 > {
   constructor(
-    @InjectModel(User.name)
     private usersRepository: UsersRepository,
     private readonly queryBus: QueryBus,
   ) {}

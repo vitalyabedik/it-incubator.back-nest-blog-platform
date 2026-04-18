@@ -1,6 +1,5 @@
 import { CommandHandler, ICommandHandler, QueryBus } from '@nestjs/cqrs';
-import { InjectModel } from '@nestjs/mongoose';
-import { TUserDocument, User } from '../../domain/user.entity';
+import { TUserDocument } from '../../domain/user.entity';
 import { UsersRepository } from '../../infrastructure/users.repository';
 import { UserNewPasswordInputDto } from '../input-dto/user-new-password.input-dto';
 import { FindUserByPasswordRecoveryCodeQuery } from '../queries/find-user-by-password-recovery-code.query-handler';
@@ -20,7 +19,6 @@ export class NewPasswordUserUseCase implements ICommandHandler<
   boolean
 > {
   constructor(
-    @InjectModel(User.name)
     private usersRepository: UsersRepository,
     private cryptoService: CryptoService,
     private readonly queryBus: QueryBus,

@@ -1,6 +1,5 @@
 import { CommandHandler, ICommandHandler, QueryBus } from '@nestjs/cqrs';
-import { InjectModel } from '@nestjs/mongoose';
-import { Post, TPostDocument } from '../../domain/post.entity';
+import { TPostDocument } from '../../domain/post.entity';
 import { PostsRepository } from '../../infrastructure/posts.repository';
 import { FindPostByIdQuery } from '../queries/find-post-by-id.query-handler';
 
@@ -14,7 +13,6 @@ export class DeletePostUseCase implements ICommandHandler<
   void
 > {
   constructor(
-    @InjectModel(Post.name)
     private postsRepository: PostsRepository,
     private readonly queryBus: QueryBus,
   ) {}

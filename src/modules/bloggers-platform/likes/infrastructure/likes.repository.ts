@@ -3,10 +3,11 @@ import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Like, TLikeDocument, TLikeModel } from '../domain/like.entity';
 import { ELikeStatus } from '../constants/like-status';
-import { GetLikeListRepositoryParams } from './input-dto/get-like-list-for-user.repository.input-dto';
-import { GetLikeMyStatusRepositoryParams } from './input-dto/get-like-my-status.repository.input-dto';
-import { GetLikeListNewestRepositoryParams } from './input-dto/get-like-list-newest.repository.input-dto';
-import { GetLikeListNewestForParentsRepositoryParams } from './input-dto/get-like-list-newest-for-parents.repository.input-dto';
+import { FindLikeListRepositoryParams } from './input-dto/find-like-list-for-user.repository.input-dto';
+import { FindLikeMyStatusRepositoryParams } from './input-dto/find-like-my-status.repository.input-dto';
+import { FindLikeListNewestRepositoryParams } from './input-dto/find-like-list-newest.repository.input-dto';
+import { FindLikeListNewestForParentsRepositoryParams } from './input-dto/find-like-list-newest-for-parents.repository.input-dto';
+import { FindLikeByFilterRepositoryParams } from './input-dto/find-like-by-filter.repository.input-dto';
 
 const DEFAULT_LIKES_LIMIT_COUNT = 3;
 
@@ -22,10 +23,17 @@ export class LikesRepository {
     private LikeModel: TLikeModel,
   ) {}
 
+  async findLikeByFilter({
+    authorId,
+    parentId,
+  }: FindLikeByFilterRepositoryParams): Promise<TLikeDocument | null> {
+    return this.LikeModel.findOne({ parentId, authorId });
+  }
+
   async findLikeListForUser({
     authorId,
     parentIds,
-  }: GetLikeListRepositoryParams): Promise<TLikeDocument[]> {
+  }: FindLikeListRepositoryParams): Promise<TLikeDocument[]> {
     return this.LikeModel.find({
       parentId: { $in: parentIds },
       authorId,
@@ -37,7 +45,7 @@ export class LikesRepository {
   async findMyLikeStatus({
     parentId,
     authorId,
-  }: GetLikeMyStatusRepositoryParams): Promise<ELikeStatus> {
+  }: FindLikeMyStatusRepositoryParams): Promise<ELikeStatus> {
     const like = await this.LikeModel.findOne({ parentId, authorId })
       .lean()
       .exec();
@@ -49,7 +57,7 @@ export class LikesRepository {
   async findNewestLikeList({
     parentId,
     limit = DEFAULT_LIKES_LIMIT_COUNT,
-  }: GetLikeListNewestRepositoryParams): Promise<TLikeDocument[]> {
+  }: FindLikeListNewestRepositoryParams): Promise<TLikeDocument[]> {
     return this.LikeModel.find({ parentId, status: ELikeStatus.Like })
       .sort({ addedLikeDate: -1 })
       .limit(limit)
@@ -60,7 +68,7 @@ export class LikesRepository {
   async findNewestLikeListForParents({
     parentIds,
     limit = DEFAULT_LIKES_LIMIT_COUNT,
-  }: GetLikeListNewestForParentsRepositoryParams): Promise<
+  }: FindLikeListNewestForParentsRepositoryParams): Promise<
     Map<string, TLikeDocument[]>
   > {
     const map = new Map<string, TLikeDocument[]>();
@@ -93,5 +101,9 @@ export class LikesRepository {
     });
 
     return map;
+  }
+
+  async save(likeDocument: TLikeDocument) {
+    await likeDocument.save();
   }
 }

@@ -1,8 +1,7 @@
 import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
-import { InjectModel } from '@nestjs/mongoose';
-import { Blog, TBlogModel } from '../../../blogs/domain/blog.entity';
 import { CreateBlogInputDto } from '../../api/input-dto/blogs.create-input-dto';
 import { BlogsRepository } from '../../infrastructure/blogs.repository';
+import { BlogsFactory } from '../factories/blogs.factory';
 
 export class CreateBlogCommand {
   constructor(public dto: CreateBlogInputDto) {}
@@ -14,16 +13,15 @@ export class CreateBlogUseCase implements ICommandHandler<
   string
 > {
   constructor(
-    @InjectModel(Blog.name)
-    private BlogModel: TBlogModel,
+    private blogsFactory: BlogsFactory,
     private blogsRepository: BlogsRepository,
   ) {}
 
   async execute({ dto }: CreateBlogCommand): Promise<string> {
-    const blog = this.BlogModel.createInstance(dto);
+    const createdBlog = await this.blogsFactory.createBlog(dto);
 
-    await this.blogsRepository.save(blog);
+    await this.blogsRepository.save(createdBlog);
 
-    return blog._id.toString();
+    return createdBlog._id.toString();
   }
 }

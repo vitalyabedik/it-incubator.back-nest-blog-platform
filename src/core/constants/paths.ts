@@ -25,6 +25,7 @@ export const routersPaths = {
   comments: {
     root: 'comments',
   },
+  likeStatus: ':id/like-status',
   testing: {
     root: 'testing',
     resetDb: 'all-data',

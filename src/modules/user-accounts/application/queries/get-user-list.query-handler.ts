@@ -1,5 +1,4 @@
 import { IQueryHandler, QueryHandler } from '@nestjs/cqrs';
-import { Inject } from '@nestjs/common';
 import { PaginatedViewDto } from '../../../../core/dto/base.paginated.view-dto';
 import { UsersQueryRepository } from '../../infrastructure/query/users.query-repository';
 import { GetUsersQueryParams } from '../../api/input-dto/get-users-query-params.input-dto';
@@ -14,10 +13,7 @@ export class GetUserListQueryHandler implements IQueryHandler<
   GetUserListQuery,
   PaginatedViewDto<UserViewDto[]>
 > {
-  constructor(
-    @Inject(UsersQueryRepository)
-    private usersQueryRepository: UsersQueryRepository,
-  ) {}
+  constructor(private usersQueryRepository: UsersQueryRepository) {}
 
   async execute(
     query: GetUserListQuery,

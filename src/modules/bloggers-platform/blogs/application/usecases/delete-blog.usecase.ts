@@ -1,6 +1,5 @@
 import { CommandHandler, ICommandHandler, QueryBus } from '@nestjs/cqrs';
-import { InjectModel } from '@nestjs/mongoose';
-import { Blog, TBlogDocument } from '../../domain/blog.entity';
+import { TBlogDocument } from '../../domain/blog.entity';
 import { BlogsRepository } from '../../infrastructure/blogs.repository';
 import { FindBlogByIdQuery } from '../queries/find-blog-by-id.query-handler';
 
@@ -14,7 +13,6 @@ export class DeleteBlogUseCase implements ICommandHandler<
   void
 > {
   constructor(
-    @InjectModel(Blog.name)
     private blogsRepository: BlogsRepository,
     private readonly queryBus: QueryBus,
   ) {}

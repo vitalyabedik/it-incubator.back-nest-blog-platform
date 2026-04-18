@@ -1,5 +1,4 @@
 import { IQueryHandler, QueryHandler } from '@nestjs/cqrs';
-import { Inject } from '@nestjs/common';
 import { UsersRepository } from '../../infrastructure/users.repository';
 import { TUserDocument } from '../../domain/user.entity';
 
@@ -12,10 +11,7 @@ export class FindUserByPasswordRecoveryCodeQueryHandler implements IQueryHandler
   FindUserByPasswordRecoveryCodeQuery,
   TUserDocument | null
 > {
-  constructor(
-    @Inject(UsersRepository)
-    private usersRepository: UsersRepository,
-  ) {}
+  constructor(private usersRepository: UsersRepository) {}
 
   async execute({
     code,

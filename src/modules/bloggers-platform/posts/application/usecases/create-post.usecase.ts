@@ -1,12 +1,11 @@
 import { CommandHandler, ICommandHandler, QueryBus } from '@nestjs/cqrs';
-import { InjectModel } from '@nestjs/mongoose';
 
 import { FindBlogByIdQuery } from '../../../blogs/application/queries/find-blog-by-id.query-handler';
 import { TBlogDocument } from '../../../blogs/domain/blog.entity';
 
 import { CreatePostInputDto } from '../../api/input-dto/posts.create-input-dto';
-import { Post, TPostModel } from '../../domain/post.entity';
 import { PostsRepository } from '../../infrastructure/posts.repository';
+import { PostsFactory } from '../factories/posts.factory';
 
 export class CreatePostCommand {
   constructor(public dto: CreatePostInputDto) {}
@@ -18,10 +17,9 @@ export class CreatePostUseCase implements ICommandHandler<
   string
 > {
   constructor(
-    @InjectModel(Post.name)
-    private PostModel: TPostModel,
-    private postsRepository: PostsRepository,
     private readonly queryBus: QueryBus,
+    private postsRepository: PostsRepository,
+    private postsFactory: PostsFactory,
   ) {}
 
   async execute({ dto }: CreatePostCommand): Promise<string> {
@@ -29,10 +27,10 @@ export class CreatePostUseCase implements ICommandHandler<
       new FindBlogByIdQuery(dto.blogId),
     );
 
-    const post = this.PostModel.createInstance(blog.name, dto);
+    const createdPost = await this.postsFactory.createPost(blog.name, dto);
 
-    await this.postsRepository.save(post);
+    await this.postsRepository.save(createdPost);
 
-    return post._id.toString();
+    return createdPost._id.toString();
   }
 }

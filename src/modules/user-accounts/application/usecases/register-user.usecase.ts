@@ -1,6 +1,4 @@
 import { CommandHandler, EventBus, ICommandHandler } from '@nestjs/cqrs';
-import { InjectModel } from '@nestjs/mongoose';
-import { User } from '../../domain/user.entity';
 import { UsersRepository } from '../../infrastructure/users.repository';
 import { UserRegisteredEvent } from '../../domain/events/user-registered.event';
 import { UserRegistrationInputDto } from '../input-dto/user-registration.input-dto';
@@ -16,7 +14,6 @@ export class RegisterUserUseCase implements ICommandHandler<
   boolean
 > {
   constructor(
-    @InjectModel(User.name)
     private eventBus: EventBus,
     private usersRepository: UsersRepository,
     private usersFactory: UsersFactory,

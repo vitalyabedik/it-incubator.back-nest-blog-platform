@@ -1,15 +1,14 @@
 import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
-import { InjectModel } from '@nestjs/mongoose';
 import { DomainException } from '../../../../core/exceptions/domain-exceptions';
 import { EDomainExceptionCode } from '../../../../core/exceptions/domain-exception-codes';
 import { errorMessages } from '../../constants/texts';
-import { User } from '../../domain/user.entity';
 import { UserLoginInputDto } from '../input-dto/user-login.input-dto';
 import { TokenService } from '../token.service';
 import { AuthService } from '../auth.service';
 
 export type TLoginUserCommandOutput = {
   accessToken: string | null;
+  refreshToken: string | null;
 };
 
 export class LoginUserCommand {
@@ -22,7 +21,6 @@ export class LoginUserUseCase implements ICommandHandler<
   TLoginUserCommandOutput
 > {
   constructor(
-    @InjectModel(User.name)
     private authService: AuthService,
     private tokenService: TokenService,
   ) {}
@@ -38,7 +36,8 @@ export class LoginUserUseCase implements ICommandHandler<
     }
 
     const accessToken = await this.tokenService.createAccessToken(user);
+    const refreshToken = await this.tokenService.createRefreshToken(user);
 
-    return { accessToken };
+    return { accessToken, refreshToken };
   }
 }

@@ -4,11 +4,10 @@ import {
   ICommandHandler,
   QueryBus,
 } from '@nestjs/cqrs';
-import { InjectModel } from '@nestjs/mongoose';
 import { DomainException } from '../../../../core/exceptions/domain-exceptions';
 import { EDomainExceptionCode } from '../../../../core/exceptions/domain-exception-codes';
 import { errorMessages } from '../../constants/texts';
-import { TUserDocument, User } from '../../domain/user.entity';
+import { TUserDocument } from '../../domain/user.entity';
 import { EAuthValidationField } from '../../constants/errors';
 import { UsersRepository } from '../../infrastructure/users.repository';
 import { FindUserByLoginOrEmailQuery } from '../queries/find-user-by-login-or-email.query-handler';
@@ -25,7 +24,6 @@ export class RegisterEmailResendingUserUseCase implements ICommandHandler<
   boolean
 > {
   constructor(
-    @InjectModel(User.name)
     private eventBus: EventBus,
     private readonly queryBus: QueryBus,
     private usersRepository: UsersRepository,
