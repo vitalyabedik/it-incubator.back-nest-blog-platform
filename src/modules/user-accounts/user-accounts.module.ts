@@ -2,7 +2,12 @@ import { MongooseModule } from '@nestjs/mongoose';
 import { Module } from '@nestjs/common';
 import { JwtModule, JwtService } from '@nestjs/jwt';
 import { ThrottlerModule } from '@nestjs/throttler';
-import { ConfigModule, ConfigService } from '@nestjs/config';
+
+import {
+  ACCESS_TOKEN_STRATEGY_INJECT_TOKEN,
+  REFRESH_TOKEN_STRATEGY_INJECT_TOKEN,
+} from '../../core/constants/tokens';
+
 import { NotificationsModule } from '../notifications/notifications.module';
 import { User, UserSchema } from './domain/user.entity';
 import { UsersController } from './api/users.controller';
@@ -14,6 +19,7 @@ import { UsersRepository } from './infrastructure/users.repository';
 import { UsersExternalQueryRepository } from './infrastructure/external-query/users.external-query-repository';
 import { UsersQueryRepository } from './infrastructure/query/users.query-repository';
 import { BearerAuthGuard } from './guards/bearer/bearer-auth.guard';
+import { OptionalBearerAuthGuard } from './guards/bearer/optional-bearer-auth.guard';
 import { CryptoService } from './application/crypto.service';
 import { FindUserByConfirmationCodeQueryHandler } from './application/queries/find-user-by-confirmation-code.query-handler';
 import { FindUserByIdQueryHandler } from './application/queries/find-user-by-id.query-handler';
@@ -31,10 +37,7 @@ import { RegisterConfirmationUserUseCase } from './application/usecases/register
 import { RegisterEmailResendingUserUseCase } from './application/usecases/register-email-resending-user.usecase';
 import { RegisterUserUseCase } from './application/usecases/register-user.usecase';
 import { UsersFactory } from './application/factories/users.factory';
-import {
-  ACCESS_TOKEN_STRATEGY_INJECT_TOKEN,
-  REFRESH_TOKEN_STRATEGY_INJECT_TOKEN,
-} from 'src/core/constants/tokens';
+import { UserAccountsConfig } from './config/user-accounts.config';
 
 const commandHandlers = [
   CreateUserUseCase,
@@ -60,12 +63,31 @@ const queryHandlers = [
   imports: [
     MongooseModule.forFeature([{ name: User.name, schema: UserSchema }]),
     ThrottlerModule.forRoot({ throttlers: [{ ttl: 10000, limit: 5 }] }),
-    ConfigModule,
     NotificationsModule,
     JwtModule,
   ],
   controllers: [AuthController, UsersController],
   providers: [
+    {
+      provide: ACCESS_TOKEN_STRATEGY_INJECT_TOKEN,
+      useFactory: (userAccountConfig: UserAccountsConfig): JwtService => {
+        return new JwtService({
+          secret: userAccountConfig.accessTokenSecret,
+          signOptions: { expiresIn: userAccountConfig.accessTokenExpireIn },
+        });
+      },
+      inject: [UserAccountsConfig],
+    },
+    {
+      provide: REFRESH_TOKEN_STRATEGY_INJECT_TOKEN,
+      useFactory: (userAccountConfig: UserAccountsConfig): JwtService => {
+        return new JwtService({
+          secret: userAccountConfig.refreshTokenSecret,
+          signOptions: { expiresIn: userAccountConfig.refreshTokenExpireIn },
+        });
+      },
+      inject: [UserAccountsConfig],
+    },
     AuthService,
     UsersExternalService,
     UsersRepository,
@@ -73,37 +95,10 @@ const queryHandlers = [
     UsersExternalQueryRepository,
     TokenService,
     CryptoService,
+    OptionalBearerAuthGuard,
     BearerAuthGuard,
     UsersFactory,
-    {
-      provide: ACCESS_TOKEN_STRATEGY_INJECT_TOKEN,
-      useFactory: (configService: ConfigService): JwtService => {
-        const secret = configService.getOrThrow<string>('AC_SECRET');
-
-        const expiresIn = configService.getOrThrow<number>('AC_TIME');
-        console.log('expiresIn', expiresIn);
-
-        return new JwtService({
-          secret,
-          signOptions: { expiresIn },
-        });
-      },
-      inject: [ConfigService],
-    },
-    {
-      provide: REFRESH_TOKEN_STRATEGY_INJECT_TOKEN,
-      useFactory: (configService: ConfigService): JwtService => {
-        const secret = configService.getOrThrow<string>('RT_SECRET');
-
-        const expiresIn = configService.getOrThrow<number>('RT_TIME');
-
-        return new JwtService({
-          secret,
-          signOptions: { expiresIn },
-        });
-      },
-      inject: [ConfigService],
-    },
+    UserAccountsConfig,
     ...commandHandlers,
     ...queryHandlers,
   ],
@@ -111,6 +106,8 @@ const queryHandlers = [
     UsersExternalService,
     UsersExternalQueryRepository,
     BearerAuthGuard,
+    OptionalBearerAuthGuard,
+    UserAccountsConfig,
     ACCESS_TOKEN_STRATEGY_INJECT_TOKEN,
     REFRESH_TOKEN_STRATEGY_INJECT_TOKEN,
   ],

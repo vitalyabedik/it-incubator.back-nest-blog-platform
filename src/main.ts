@@ -1,17 +1,24 @@
 import { NestFactory } from '@nestjs/core';
 import { NestExpressApplication } from '@nestjs/platform-express';
-import { AppModule } from './app.module';
 import { appSetup } from './setup/app.setup';
-
-const PORT = process.env.PORT || 5005;
+import { initAppModule } from './init-app-module';
+import { CoreConfig } from './core/config/core.config';
 
 async function bootstrap() {
-  const app = await NestFactory.create<NestExpressApplication>(AppModule);
+  const DynamicAppModule = await initAppModule();
 
-  appSetup(app);
+  const app =
+    await NestFactory.create<NestExpressApplication>(DynamicAppModule);
 
-  await app.listen(PORT, () => {
-    console.log(`Server is running on port ${PORT}`);
+  const coreConfig = app.get<CoreConfig>(CoreConfig);
+
+  appSetup(app, coreConfig.isSwaggerEnabled);
+
+  const port = coreConfig.port;
+
+  await app.listen(port, () => {
+    console.log('App starting listen port: ', port);
+    console.log('NODE_ENV: ', coreConfig.env);
   });
 }
 

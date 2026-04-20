@@ -1,6 +1,6 @@
 import { MongooseModuleFactoryOptions } from '@nestjs/mongoose';
 import { Logger } from '@nestjs/common';
-import { AppConfigService } from './config.types';
+import { CoreConfig } from '../core/config/core.config';
 
 enum EDBLogAction {
   CONNECTED = 'connected',
@@ -13,11 +13,11 @@ const DB_SUCCESS_CONNECTION = 'Соединение с базой данных �
 const DB_SUCCESS_DISCONNECTION = 'Соединение с базой данных отключено';
 const DB_ERROR_CONNECTION = 'Соединение с базой данных произошло с ошибкой';
 
-export const getMongooseConfig = (
-  configService: AppConfigService,
+export const getDbConfig = (
+  coreConfig: CoreConfig,
 ): MongooseModuleFactoryOptions => {
   return {
-    uri: configService.getOrThrow('MONGO_DB_URL'),
+    uri: coreConfig.mongoURI,
     retryAttempts: 5,
     retryDelay: 3000,
 

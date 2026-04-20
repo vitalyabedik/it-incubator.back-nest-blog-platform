@@ -1,5 +1,6 @@
-import { Module } from '@nestjs/common';
 import { MailerModule } from '@nestjs-modules/mailer';
+import { ConfigService } from '@nestjs/config';
+import { Module } from '@nestjs/common';
 import { EmailService } from './application/email.service';
 import { EmailTemplates } from './application/email.templates';
 import { UserRegisteredEmailResendingEvent } from '../user-accounts/domain/events/user-registered-email-resending.event';
@@ -14,17 +15,21 @@ const eventHandlers = [
 
 @Module({
   imports: [
-    MailerModule.forRoot({
-      transport: {
-        service: process.env.POST_SERVICE,
-        auth: {
-          user: process.env.EMAIL,
-          pass: process.env.EMAIL_PASS,
-        },
+    MailerModule.forRootAsync({
+      useFactory: (configService: ConfigService) => {
+        const postService = configService.get('POST_SERVICE');
+        const email = configService.get('EMAIL');
+        const emailPass = configService.get('EMAIL_PASS');
+
+        return {
+          transport: {
+            service: postService,
+            auth: { user: email, pass: emailPass },
+          },
+          defaults: { from: `"Registration" <${email}>` },
+        };
       },
-      defaults: {
-        from: 'Registration <codeSender>',
-      },
+      inject: [ConfigService],
     }),
   ],
   providers: [EmailService, EmailTemplates, ...eventHandlers],

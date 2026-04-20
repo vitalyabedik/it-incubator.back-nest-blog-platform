@@ -3,16 +3,20 @@ import {
   Catch,
   ExceptionFilter,
   HttpStatus,
+  Inject,
 } from '@nestjs/common';
 import { Request, Response } from 'express';
-import { TErrorResponseBody } from './error-response-body.type';
+import { CoreConfig } from '../../../core/config/core.config';
 import { EDomainExceptionCode } from '../domain-exception-codes';
+import { TErrorResponseBody } from './error-response-body.type';
 
 const DEFAULT_EXCEPTION_MESSAGE = 'Неизвестный exception';
 const SOME_ERROR_MESSAGE = 'Произошла ошибка';
 
 @Catch()
 export class AllHttpExceptionsFilter implements ExceptionFilter {
+  constructor(@Inject() private readonly coreConfig: CoreConfig) {}
+
   catch(exception: any, host: ArgumentsHost): void {
     const ctx = host.switchToHttp();
     const response = ctx.getResponse<Response>();
@@ -29,7 +33,7 @@ export class AllHttpExceptionsFilter implements ExceptionFilter {
     requestUrl: string,
     message: string,
   ): TErrorResponseBody {
-    const isProduction = process.env.NODE_ENV === 'production';
+    const isProduction = this.coreConfig.env === 'production';
 
     if (isProduction) {
       return {

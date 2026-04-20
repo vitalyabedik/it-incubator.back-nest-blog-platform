@@ -4,7 +4,6 @@ import {
   Inject,
   Injectable,
 } from '@nestjs/common';
-import { ConfigService } from '@nestjs/config';
 import { JwtService } from '@nestjs/jwt';
 import { Request } from 'express';
 import { Reflector } from '@nestjs/core';
@@ -14,6 +13,7 @@ import { ACCESS_TOKEN_STRATEGY_INJECT_TOKEN } from '../../../../core/constants/t
 import { UserFromRequestDataInputDto } from '../../api/input-dto/user-from-request-data-input.dto';
 import { errorMessages } from '../../constants/texts';
 import { IS_PUBLIC_KEY } from '../decorators/public.decorator';
+import { UserAccountsConfig } from '../../config/user-accounts.config';
 
 export interface AccessTokenPayload extends UserFromRequestDataInputDto {}
 
@@ -23,7 +23,7 @@ export class BearerAuthGuard implements CanActivate {
     @Inject(ACCESS_TOKEN_STRATEGY_INJECT_TOKEN)
     private readonly jwtService: JwtService,
     private readonly reflector: Reflector,
-    private readonly configService: ConfigService,
+    private readonly userAccountsConfig: UserAccountsConfig,
   ) {}
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
@@ -45,7 +45,7 @@ export class BearerAuthGuard implements CanActivate {
     }
 
     try {
-      const secret = this.configService.getOrThrow<string>('AC_SECRET');
+      const secret = this.userAccountsConfig.accessTokenSecret;
 
       const payload = await this.jwtService.verifyAsync<AccessTokenPayload>(
         token,
