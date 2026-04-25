@@ -16,7 +16,7 @@ import { ObjectIdValidationPipe } from '../../../../core/pipes/object-id-validat
 import { UseBearerGuard } from '../../..//user-accounts/guards/decorators/use-bearer-guard.decorator';
 import { UseOptionalBearerGuard } from '../../../user-accounts/guards/decorators/use-optional-bearer-guard.decorator';
 import { ExtractUserFromRequest } from '../../../user-accounts/guards/decorators/param/extract-user-from-request.decorator';
-import { UserFromRequestDataInputDto } from '../../../user-accounts/api/input-dto/user-from-request-data-input.dto';
+import { UserFromRequestDataInputDto } from '../../../user-accounts/api/input-dto/user/user-from-request-data-input.dto';
 import { Public } from '../../../user-accounts/guards/decorators/public.decorator';
 import { ExtractOptionalUserFromRequest } from '../../../user-accounts/guards/decorators/param/extract-optional-user-from-request.decorator';
 import { CommentViewDto } from '../application/view-dto/comments.view-dto';

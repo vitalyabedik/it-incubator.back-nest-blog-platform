@@ -20,6 +20,8 @@ import { ObjectIdValidationPipe } from '../../../../core/pipes/object-id-validat
 
 import { UseBasicGuard } from '../../../user-accounts/guards/decorators/use-basic-guard.decorator';
 import { UseOptionalBearerGuard } from '../../../user-accounts/guards/decorators/use-optional-bearer-guard.decorator';
+import { ExtractOptionalUserFromRequest } from '../../../user-accounts/guards/decorators/param/extract-optional-user-from-request.decorator';
+import { UserFromRequestDataInputDto } from '../../../user-accounts/api/input-dto/user/user-from-request-data-input.dto';
 
 import { GetPostsQueryParams } from '../../posts/api/input-dto/get-posts-query-params.input-dto';
 import { PostViewDto } from '../../posts/application/view-dto/posts.view-dto';
@@ -39,8 +41,6 @@ import { TBlogDocument } from '../domain/blog.entity';
 import { GetBlogsQueryParams } from './input-dto/get-blogs-query-params.input-dto';
 import { CreateBlogInputDto } from './input-dto/blogs.create-input-dto';
 import { UpdateBlogInputDto } from './input-dto/blogs.update-input-dto';
-import { ExtractOptionalUserFromRequest } from 'src/modules/user-accounts/guards/decorators/param/extract-optional-user-from-request.decorator';
-import { UserFromRequestDataInputDto } from 'src/modules/user-accounts/api/input-dto/user-from-request-data-input.dto';
 
 @Controller(routersPaths.blogs.root)
 export class BlogsController {

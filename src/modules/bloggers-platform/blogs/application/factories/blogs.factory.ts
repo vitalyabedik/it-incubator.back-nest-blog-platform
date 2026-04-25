@@ -15,7 +15,7 @@ export class BlogsFactory {
   ) {}
 
   async createBlog(dto: CreateBlogInputDto): Promise<TBlogDocument> {
-    const newBlog = await this.BlogModel.createInstance(dto);
+    const newBlog = this.BlogModel.createInstance(dto);
 
     return newBlog;
   }

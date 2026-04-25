@@ -5,7 +5,9 @@ import { GLOBAL_PREFIX } from './global-prefix.setup';
 const SWAGGER_API_TITLE = 'BLOGGER API';
 const SWAGGER_SITE_TITLE = 'Blogger Swagger';
 
-export function swaggerSetup(app: INestApplication) {
+export function swaggerSetup(app: INestApplication, isSwaggerEnabled: boolean) {
+  if (!isSwaggerEnabled) return;
+
   const config = new DocumentBuilder()
     .setTitle(SWAGGER_API_TITLE)
     .addBearerAuth()

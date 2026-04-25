@@ -14,7 +14,7 @@ export class PostsFactory {
     blogName: string,
     dto: CreatePostInputDto,
   ): Promise<TPostDocument> {
-    const newPost = await this.PostModel.createInstance(blogName, dto);
+    const newPost = this.PostModel.createInstance(blogName, dto);
 
     return newPost;
   }

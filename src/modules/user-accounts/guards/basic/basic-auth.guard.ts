@@ -1,17 +1,26 @@
-import { CanActivate, ExecutionContext, Injectable } from '@nestjs/common';
+import {
+  CanActivate,
+  ExecutionContext,
+  Inject,
+  Injectable,
+} from '@nestjs/common';
 import { Request } from 'express';
 import { Reflector } from '@nestjs/core';
 import { DomainException } from '../../../../core/exceptions/domain-exceptions';
 import { EDomainExceptionCode } from '../../../../core/exceptions/domain-exception-codes';
+import { UserAccountsConfig } from '../../config/user-accounts.config';
 import { errorMessages } from '../../constants/texts';
 import { IS_PUBLIC_KEY } from '../decorators/public.decorator';
 
 @Injectable()
 export class BasicAuthGuard implements CanActivate {
-  private readonly validUsername = process.env.ADMIN_USERNAME || 'admin';
-  private readonly validPassword = process.env.ADMIN_PASSWORD || 'qwerty';
+  constructor(
+    @Inject() private readonly userAccountsConfig: UserAccountsConfig,
+    private reflector: Reflector,
+  ) {}
 
-  constructor(private reflector: Reflector) {}
+  private readonly validUsername = this.userAccountsConfig.adminUsername;
+  private readonly validPassword = this.userAccountsConfig.adminPassword;
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
     const isPublic = this.reflector.getAllAndOverride<boolean>(IS_PUBLIC_KEY, [

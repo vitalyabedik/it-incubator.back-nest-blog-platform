@@ -1,4 +1,4 @@
-import { TLikeDocument } from 'src/modules/bloggers-platform/likes/domain/like.entity';
+import { TLikeDocument } from '../../../likes/domain/like.entity';
 import { ELikeStatus } from '../../../likes/constants/like-status';
 import { TPostDocument } from '../../domain/post.entity';
 

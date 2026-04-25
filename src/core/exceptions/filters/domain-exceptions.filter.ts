@@ -3,14 +3,18 @@ import {
   Catch,
   ExceptionFilter,
   HttpStatus,
+  Inject,
 } from '@nestjs/common';
 import { Request, Response } from 'express';
+import { CoreConfig } from '../../../core/config/core.config';
 import { DomainException, Extension } from '../domain-exceptions';
 import { EDomainExceptionCode } from '../domain-exception-codes';
 import { TErrorResponseBody } from './error-response-body.type';
 
 @Catch(DomainException)
 export class DomainHttpExceptionsFilter implements ExceptionFilter {
+  constructor(@Inject() private readonly coreConfig: CoreConfig) {}
+
   catch(exception: DomainException, host: ArgumentsHost): void {
     const ctx = host.switchToHttp();
     const response = ctx.getResponse<Response>();
@@ -49,7 +53,7 @@ export class DomainHttpExceptionsFilter implements ExceptionFilter {
     exception: DomainException,
     requestUrl: string,
   ): TErrorResponseBody | { errorsMessages: Extension[] } {
-    const isTest = process.env.NODE_ENV === 'test';
+    const isTest = this.coreConfig.env === 'test';
 
     if (isTest) {
       return {

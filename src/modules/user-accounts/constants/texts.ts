@@ -20,5 +20,8 @@ export const errorMessages = {
     'Ошибка при повторной отправке email поля isConfirmed',
   emailResending: 'Операция с подтверждением кода не выполнена',
   newPassword: 'Операция с созданием newPassword не выполнена',
+  refreshToken: 'Некорректный refreshToken',
+
+  noCurrentOwner: 'Вы не являетесь владельцем данной сессии для данной сессии',
   notFoundSession: 'Не найдена сессия с таким deviceId',
 };

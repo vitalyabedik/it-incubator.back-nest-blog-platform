@@ -9,7 +9,16 @@ import { errorMessages } from '../constants/texts';
 export class UsersRepository {
   constructor(@InjectModel(User.name) private UserModel: TUserModel) {}
 
-  async findUserById(id: string): Promise<TUserDocument> {
+  async findUserById(id: string): Promise<TUserDocument | null> {
+    const user = await this.UserModel.findOne({
+      _id: id,
+      deletedAt: null,
+    }).exec();
+
+    return user;
+  }
+
+  async findUserByIdOrThrow(id: string): Promise<TUserDocument> {
     const user = await this.UserModel.findOne({
       _id: id,
       deletedAt: null,

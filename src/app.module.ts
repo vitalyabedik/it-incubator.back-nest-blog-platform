@@ -1,30 +1,36 @@
-import { Module } from '@nestjs/common';
+// импорт config module должен быть на верхнем уровне всех импортов
+import { configModule } from './config/config-dynamic-module';
+import { DynamicModule, Module } from '@nestjs/common';
 import { MongooseModule } from '@nestjs/mongoose';
-import { ConfigModule, ConfigService } from '@nestjs/config';
 import { APP_FILTER } from '@nestjs/core';
-import { CqrsModule } from '@nestjs/cqrs';
+
 import { TestingModule } from './modules/testing/testing.module';
 import { UserAccountsModule } from './modules/user-accounts/user-accounts.module';
 import { BloggersPlatformModule } from './modules/bloggers-platform/bloggers-platform.module';
-import { CoreModule } from './core/core.module';
+import { NotificationsModule } from './modules/notifications/notifications.module';
+
+import { getDbConfig } from './config/config-db';
+
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
-import { getMongooseConfig } from './config/mongoose.config';
+
+import { CoreModule } from './core/core.module';
 import { AllHttpExceptionsFilter } from './core/exceptions/filters/all-exceptions.filter';
 import { DomainHttpExceptionsFilter } from './core/exceptions/filters/domain-exceptions.filter';
+import { CoreConfig } from './core/config/core.config';
 
 @Module({
   imports: [
-    CqrsModule.forRoot(),
-    ConfigModule.forRoot({ isGlobal: true }),
     MongooseModule.forRootAsync({
-      useFactory: getMongooseConfig,
-      inject: [ConfigService],
+      useFactory: getDbConfig,
+      inject: [CoreConfig],
     }),
     UserAccountsModule,
     BloggersPlatformModule,
     TestingModule,
     CoreModule,
+    NotificationsModule,
+    configModule,
   ],
   controllers: [AppController],
   providers: [
@@ -39,4 +45,11 @@ import { DomainHttpExceptionsFilter } from './core/exceptions/filters/domain-exc
     },
   ],
 })
-export class AppModule {}
+export class AppModule {
+  static async forRoot(coreConfig: CoreConfig): Promise<DynamicModule> {
+    return {
+      module: AppModule,
+      imports: [...(coreConfig.includeTestingModule ? [TestingModule] : [])],
+    };
+  }
+}
