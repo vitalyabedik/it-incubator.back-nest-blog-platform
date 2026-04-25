@@ -3,9 +3,18 @@ import { JwtService } from '@nestjs/jwt';
 import {
   ACCESS_TOKEN_STRATEGY_INJECT_TOKEN,
   REFRESH_TOKEN_STRATEGY_INJECT_TOKEN,
-} from '../../../core/constants/tokens';
-import { CreateAccessTokenInputDto } from './input-dto/create-access-token.input-dto';
+} from '../constants/tokens';
+import { CreateAccessTokenInputDto } from './input-dto/user/create-access-token.input-dto';
+import { CreateRefreshTokenInputDto } from './input-dto/user/create-refresh-token.input-dto';
 import { UserAccountsConfig } from '../config/user-accounts.config';
+
+export type TVerifyRefreshTokenArgs = {
+  userId: string;
+  login: string;
+  deviceId: string;
+  iat: number;
+  exp: number;
+};
 
 @Injectable()
 export class TokenService {
@@ -18,10 +27,8 @@ export class TokenService {
   ) {}
 
   async createAccessToken(dto: CreateAccessTokenInputDto) {
-    // const expiresInRaw = this.userAccountsConfig.accessTokenExpireIn;
-    // const expiresIn = parseInt(expiresInRaw, 10);
-
-    const expiresIn = this.userAccountsConfig.accessTokenExpireIn;
+    const expiresInRaw = this.userAccountsConfig.accessTokenExpireIn;
+    const expiresIn = parseInt(String(expiresInRaw), 10);
 
     const accessToken = await this.accessJwtService.signAsync(dto, {
       expiresIn,
@@ -30,16 +37,49 @@ export class TokenService {
     return accessToken;
   }
 
-  async createRefreshToken(dto: CreateAccessTokenInputDto) {
-    // const expiresInRaw = this.userAccountsConfig.refreshTokenExpireIn;
-    // const expiresIn = parseInt(expiresInRaw, 10);
-
-    const expiresIn = this.userAccountsConfig.refreshTokenExpireIn;
+  private async createRefreshToken(dto: CreateRefreshTokenInputDto) {
+    const expiresInRaw = this.userAccountsConfig.refreshTokenExpireIn;
+    const expiresIn = parseInt(String(expiresInRaw), 10);
 
     const refreshToken = await this.refreshJwtService.signAsync(dto, {
       expiresIn,
     });
 
     return refreshToken;
+  }
+
+  async createRefreshTokenWithInfo(dto: CreateRefreshTokenInputDto) {
+    const refreshToken = await this.createRefreshToken(dto);
+    const decodedRefreshToken =
+      this.refreshJwtService.decode<TVerifyRefreshTokenArgs | null>(
+        refreshToken,
+      );
+
+    if (
+      !decodedRefreshToken?.iat ||
+      !decodedRefreshToken?.exp ||
+      !decodedRefreshToken?.deviceId
+    )
+      return null;
+
+    return {
+      refreshToken,
+      deviceId: decodedRefreshToken.deviceId,
+      iat: decodedRefreshToken.iat,
+      expirationAt: decodedRefreshToken.exp,
+    };
+  }
+
+  async verifyRefreshToken(refreshToken: string) {
+    try {
+      const verifiedRefreshToken =
+        await this.refreshJwtService.verifyAsync<TVerifyRefreshTokenArgs>(
+          refreshToken,
+        );
+
+      return verifiedRefreshToken;
+    } catch {
+      return null;
+    }
   }
 }

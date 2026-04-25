@@ -11,7 +11,7 @@ export class UsersExternalService {
   ) {}
 
   async makeUserAsSpammer(userId: string) {
-    const user = await this.usersRepository.findUserById(userId);
+    const user = await this.usersRepository.findUserByIdOrThrow(userId);
 
     await this.usersRepository.save(user);
   }

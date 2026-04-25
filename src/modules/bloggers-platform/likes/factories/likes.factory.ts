@@ -11,7 +11,7 @@ export class LikesFactory {
   ) {}
 
   async createLike(dto: CreateLikeDomainDto): Promise<TLikeDocument> {
-    const newLike = await this.LikeModel.createInstance(dto);
+    const newLike = this.LikeModel.createInstance(dto);
 
     return newLike;
   }

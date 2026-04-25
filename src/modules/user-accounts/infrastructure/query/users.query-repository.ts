@@ -5,7 +5,7 @@ import { UserViewDto } from '../../application/view-dto/users.view-dto';
 import { PaginatedViewDto } from '../../../../core/dto/base.paginated.view-dto';
 import { DomainException } from '../../../../core/exceptions/domain-exceptions';
 import { EDomainExceptionCode } from '../../../../core/exceptions/domain-exception-codes';
-import { GetUsersQueryParams } from '../../api/input-dto/get-users-query-params.input-dto';
+import { GetUsersQueryParams } from '../../api/input-dto/user/get-users-query-params.input-dto';
 import { errorMessages } from '../../constants/texts';
 
 @Injectable()

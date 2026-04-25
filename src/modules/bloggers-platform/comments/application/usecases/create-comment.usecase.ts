@@ -1,6 +1,6 @@
 import { CommandHandler, ICommandHandler, QueryBus } from '@nestjs/cqrs';
 import { GetPostByIdQuery } from '../../../posts/application/queries/get-post-by-id.query-handler';
-import { GetUserByIdQuery } from '../../../../user-accounts/application/queries/get-user-by-id.query-handler';
+import { GetUserByIdQuery } from '../../../../user-accounts/application/queries/user/get-user-by-id.query-handler';
 import { CreateCommentInputDto } from '../../api/input-dto/comment.create-input-dto';
 import { CommentsRepository } from '../../infrastructure/comments.repository';
 import { CommentatorInfo } from '../view-dto/comments.view-dto';

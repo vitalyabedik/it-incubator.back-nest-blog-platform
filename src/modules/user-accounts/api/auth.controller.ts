@@ -14,27 +14,34 @@ import { type Response } from 'express';
 
 import { routersPaths } from '../../../core/constants/paths';
 import { AppThrottle } from '../../../core/decorators/throttle/app-throttle';
+import {
+  ExtractClientInfo,
+  ClientInfoDto,
+} from '../../../core/decorators/client-info/extract-client-info';
+import { ExtractCookies } from '../../../core/decorators/cookies/extract-cookies';
 
 import { ExtractUserFromRequest } from '../guards/decorators/param/extract-user-from-request.decorator';
 import { UseBearerGuard } from '../guards/decorators/use-bearer-guard.decorator';
 import {
   LoginUserCommand,
   TLoginUserCommandOutput,
-} from '../application/usecases/login-user.usecase';
-import { PasswordRecoveryUserCommand } from '../application/usecases/password-recovery-user.usecase';
-import { NewPasswordUserCommand } from '../application/usecases/new-password-user.usecase';
-import { RegisterUserCommand } from '../application/usecases/register-user.usecase';
-import { RegisterConfirmationUserCommand } from '../application/usecases/register-confirmation-user.usecase';
-import { RegisterEmailResendingUserCommand } from '../application/usecases/register-email-resending-user.usecase';
-import { AuthLoginInputDto } from './input-dto/auth.login-input-dto';
-import { AuthPasswordRecoveryInputDto } from './input-dto/auth.password-recovery-input-dto';
-import { AuthNewPasswordInputDto } from './input-dto/auth.new-password-input-dto';
-import { AuthRegistrationInputDto } from './input-dto/auth.registration-input-dto';
-import { AuthRegistrationEmailResendingInputDto } from './input-dto/auth.registration-email-resending-input-dto';
-import { AuthRegistrationConfirmationInputDto } from './input-dto/auth.registration-confirmation-input-dto';
-import { UserFromRequestDataInputDto } from './input-dto/user-from-request-data-input.dto';
+} from '../application/usecases/user/login-user.usecase';
+import { PasswordRecoveryUserCommand } from '../application/usecases/user/password-recovery-user.usecase';
+import { NewPasswordUserCommand } from '../application/usecases/user/new-password-user.usecase';
+import { RegisterUserCommand } from '../application/usecases/user/register-user.usecase';
+import { RegisterConfirmationUserCommand } from '../application/usecases/user/register-confirmation-user.usecase';
+import { RegisterEmailResendingUserCommand } from '../application/usecases/user/register-email-resending-user.usecase';
+import { AuthLoginInputDto } from './input-dto/user/auth.login-input-dto';
+import { AuthPasswordRecoveryInputDto } from './input-dto/user/auth.password-recovery-input-dto';
+import { AuthNewPasswordInputDto } from './input-dto/user/auth.new-password-input-dto';
+import { AuthRegistrationInputDto } from './input-dto/user/auth.registration-input-dto';
+import { AuthRegistrationEmailResendingInputDto } from './input-dto/user/auth.registration-email-resending-input-dto';
+import { AuthRegistrationConfirmationInputDto } from './input-dto/user/auth.registration-confirmation-input-dto';
+import { UserFromRequestDataInputDto } from './input-dto/user/user-from-request-data-input.dto';
+import { LogoutUserCommand } from '../application/usecases/user/logout-user.usecase';
+import { RefreshTokenCommand } from '../application/usecases/user/refresh-token.usecase';
 
-@AppThrottle()
+@AppThrottle({ limit: 5, ttl: 10_000 })
 @Controller(routersPaths.auth.root)
 export class AuthController {
   constructor(private readonly commandBus: CommandBus) {
@@ -42,19 +49,55 @@ export class AuthController {
   }
 
   @Post(routersPaths.auth.login)
-  @SkipThrottle()
   @HttpCode(HttpStatus.OK)
-  async login(@Body() dto: AuthLoginInputDto, @Res() response: Response) {
+  async login(
+    @Body() dto: AuthLoginInputDto,
+    @Res() response: Response,
+    @ExtractClientInfo() clientInfo: ClientInfoDto,
+  ) {
     const { accessToken, refreshToken } = await this.commandBus.execute<
       LoginUserCommand,
       TLoginUserCommandOutput
-    >(new LoginUserCommand(dto));
+    >(new LoginUserCommand(clientInfo, dto));
 
     response.cookie('refreshToken', refreshToken, {
       httpOnly: true,
       secure: true,
     });
     response.send({ accessToken });
+  }
+
+  @Post(routersPaths.auth.logout)
+  @HttpCode(HttpStatus.NO_CONTENT)
+  async logout(
+    @ExtractCookies('refreshToken') refreshToken: string,
+    @Res() response: Response,
+  ) {
+    await this.commandBus.execute<LogoutUserCommand, void>(
+      new LogoutUserCommand(refreshToken),
+    );
+
+    response.clearCookie('refreshToken');
+    response.status(HttpStatus.NO_CONTENT).send();
+  }
+
+  @Post(routersPaths.auth.refreshToken)
+  @HttpCode(HttpStatus.OK)
+  async refreshToken(
+    @ExtractCookies('refreshToken') refreshToken: string,
+    @ExtractClientInfo() clientInfo: ClientInfoDto,
+    @Res() response: Response,
+  ) {
+    const result = await this.commandBus.execute<
+      RefreshTokenCommand,
+      TLoginUserCommandOutput
+    >(new RefreshTokenCommand({ clientInfo, refreshToken }));
+
+    response.cookie('refreshToken', result.refreshToken, {
+      httpOnly: true,
+      secure: true,
+    });
+    response.send({ accessToken: result.accessToken });
   }
 
   @Post(routersPaths.auth.passwordRecovery)
@@ -106,6 +149,10 @@ export class AuthController {
   @ApiBearerAuth('bearerAuth')
   @UseBearerGuard()
   async me(@ExtractUserFromRequest() dto: UserFromRequestDataInputDto) {
-    return dto;
+    return {
+      email: dto.email,
+      login: dto.login,
+      userId: dto.login,
+    };
   }
 }

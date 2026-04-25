@@ -17,12 +17,12 @@ import { routersPaths } from '../../../core/constants/paths';
 import { ObjectIdValidationPipe } from '../../../core/pipes/object-id-validation-transformation-pipe.service';
 import { UseBasicGuard } from '../guards/decorators/use-basic-guard.decorator';
 import { UserViewDto } from '../application/view-dto/users.view-dto';
-import { GetUserListQuery } from '../application/queries/get-user-list.query-handler';
-import { GetUserByIdQuery } from '../application/queries/get-user-by-id.query-handler';
-import { CreateUserCommand } from '../application/usecases/create-user.usecase';
-import { DeleteUserCommand } from '../application/usecases/delete-user.usecase';
-import { CreateUserInputDto } from './input-dto/users.create-input-dto';
-import { GetUsersQueryParams } from './input-dto/get-users-query-params.input-dto';
+import { GetUserListQuery } from '../application/queries/user/get-user-list.query-handler';
+import { GetUserByIdQuery } from '../application/queries/user/get-user-by-id.query-handler';
+import { CreateUserCommand } from '../application/usecases/user/create-user.usecase';
+import { DeleteUserCommand } from '../application/usecases/user/delete-user.usecase';
+import { CreateUserInputDto } from './input-dto/user/users.create-input-dto';
+import { GetUsersQueryParams } from './input-dto/user/get-users-query-params.input-dto';
 
 @Controller(routersPaths.users.root)
 @UseBasicGuard()

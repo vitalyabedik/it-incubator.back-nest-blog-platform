@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { UsersRepository } from '../infrastructure/users.repository';
 import { CryptoService } from './crypto.service';
-import { UserLoginInputDto } from './input-dto/user-login.input-dto';
+import { UserLoginInputDto } from './input-dto/user/user-login.input-dto';
 
 @Injectable()
 export class AuthService {

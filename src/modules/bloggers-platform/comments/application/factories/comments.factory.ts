@@ -15,7 +15,7 @@ export class CommentsFactory {
   ) {}
 
   async createComment(dto: CreateCommentDomainDto): Promise<TCommentDocument> {
-    const newComment = await this.CommentModel.createInstance(dto);
+    const newComment = this.CommentModel.createInstance(dto);
 
     return newComment;
   }

@@ -6,7 +6,7 @@ import {
 } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { Request } from 'express';
-import { ACCESS_TOKEN_STRATEGY_INJECT_TOKEN } from '../../../../core/constants/tokens';
+import { ACCESS_TOKEN_STRATEGY_INJECT_TOKEN } from '../../constants/tokens';
 import { AccessTokenPayload } from './bearer-auth.guard';
 import { UserAccountsConfig } from '../../config/user-accounts.config';
 

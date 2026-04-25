@@ -1,7 +1,7 @@
 import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
 import { DomainException } from '../../../../../core/exceptions/domain-exceptions';
 import { EDomainExceptionCode } from '../../../../../core/exceptions/domain-exception-codes';
-import { UserFromRequestDataInputDto } from '../../../../user-accounts/api/input-dto/user-from-request-data-input.dto';
+import { UserFromRequestDataInputDto } from '../../../../user-accounts/api/input-dto/user/user-from-request-data-input.dto';
 import { CommentsRepository } from '../../infrastructure/comments.repository';
 import { errorMessages } from '../../constants/texts';
 

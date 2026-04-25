@@ -23,7 +23,7 @@ import { UseBasicGuard } from '../../../user-accounts/guards/decorators/use-basi
 import { UseBearerGuard } from '../../../user-accounts/guards/decorators/use-bearer-guard.decorator';
 import { Public } from '../../../user-accounts/guards/decorators/public.decorator';
 import { ExtractUserFromRequest } from '../../../user-accounts/guards/decorators/param/extract-user-from-request.decorator';
-import { UserFromRequestDataInputDto } from '../../../user-accounts/api/input-dto/user-from-request-data-input.dto';
+import { UserFromRequestDataInputDto } from '../../../user-accounts/api/input-dto/user/user-from-request-data-input.dto';
 import { ExtractOptionalUserFromRequest } from '../../../user-accounts/guards/decorators/param/extract-optional-user-from-request.decorator';
 
 import { GetCommentsQueryParams } from '../../comments/api/input-dto/get-comments-query-params.input-dto';

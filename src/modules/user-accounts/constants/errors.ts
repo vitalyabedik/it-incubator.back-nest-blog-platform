@@ -14,5 +14,8 @@ export enum EAuthValidationField {
   LOGIN = 'login',
   EMAIL = 'email',
   REFRESH_TOKEN = 'refreshToken',
+}
+
+export enum ESecurityDeviceField {
   DEVICE_ID = 'deviceId',
 }

@@ -6,7 +6,7 @@ import { ThrottlerModule } from '@nestjs/throttler';
 import {
   ACCESS_TOKEN_STRATEGY_INJECT_TOKEN,
   REFRESH_TOKEN_STRATEGY_INJECT_TOKEN,
-} from '../../core/constants/tokens';
+} from './constants/tokens';
 
 import { NotificationsModule } from '../notifications/notifications.module';
 import { User, UserSchema } from './domain/user.entity';
@@ -21,52 +21,65 @@ import { UsersQueryRepository } from './infrastructure/query/users.query-reposit
 import { BearerAuthGuard } from './guards/bearer/bearer-auth.guard';
 import { OptionalBearerAuthGuard } from './guards/bearer/optional-bearer-auth.guard';
 import { CryptoService } from './application/crypto.service';
-import { FindUserByConfirmationCodeQueryHandler } from './application/queries/find-user-by-confirmation-code.query-handler';
-import { FindUserByIdQueryHandler } from './application/queries/find-user-by-id.query-handler';
-import { FindUserByLoginOrEmailOrThrowQueryHandler } from './application/queries/find-user-by-login-or-email-or-throw.query-handler';
-import { FindUserByLoginOrEmailQueryHandler } from './application/queries/find-user-by-login-or-email.query-handler';
-import { FindUserByPasswordRecoveryCodeQueryHandler } from './application/queries/find-user-by-password-recovery-code.query-handler';
-import { GetUserByIdQueryHandler } from './application/queries/get-user-by-id.query-handler';
-import { GetUserListQueryHandler } from './application/queries/get-user-list.query-handler';
-import { CreateUserUseCase } from './application/usecases/create-user.usecase';
-import { DeleteUserUseCase } from './application/usecases/delete-user.usecase';
-import { LoginUserUseCase } from './application/usecases/login-user.usecase';
-import { NewPasswordUserUseCase } from './application/usecases/new-password-user.usecase';
-import { PasswordRecoveryUserUseCase } from './application/usecases/password-recovery-user.usecase';
-import { RegisterConfirmationUserUseCase } from './application/usecases/register-confirmation-user.usecase';
-import { RegisterEmailResendingUserUseCase } from './application/usecases/register-email-resending-user.usecase';
-import { RegisterUserUseCase } from './application/usecases/register-user.usecase';
+import { GetUserByIdQueryHandler } from './application/queries/user/get-user-by-id.query-handler';
+import { GetUserListQueryHandler } from './application/queries/user/get-user-list.query-handler';
+import { CreateUserUseCase } from './application/usecases/user/create-user.usecase';
+import { DeleteUserUseCase } from './application/usecases/user/delete-user.usecase';
+import { LoginUserUseCase } from './application/usecases/user/login-user.usecase';
+import { NewPasswordUserUseCase } from './application/usecases/user/new-password-user.usecase';
+import { PasswordRecoveryUserUseCase } from './application/usecases/user/password-recovery-user.usecase';
+import { RegisterConfirmationUserUseCase } from './application/usecases/user/register-confirmation-user.usecase';
+import { RegisterEmailResendingUserUseCase } from './application/usecases/user/register-email-resending-user.usecase';
+import { RegisterUserUseCase } from './application/usecases/user/register-user.usecase';
 import { UsersFactory } from './application/factories/users.factory';
 import { UserAccountsConfig } from './config/user-accounts.config';
+import { SecurityDeviceRepository } from './infrastructure/security-device.repository';
+import { SecurityDeviceQueryRepository } from './infrastructure/query/security-device.query-repository';
+import { LogoutUserUseCase } from './application/usecases/user/logout-user.usecase';
+import { CreateSecurityDeviceUseCase } from './application/usecases/security-device/create-security-device.usecase';
+import { DeleteSecurityDeviceByDeviceIdUseCase } from './application/usecases/security-device/delete-security-device-by-deviceId.usecase';
+import { DeleteSecurityDeviceExceptCurrentUseCase } from './application/usecases/security-device/delete-security-device-list-except-current.usecase';
+import { RefreshTokenUseCase } from './application/usecases/user/refresh-token.usecase';
+import { GetSecurityDeviceListByUserIdHandler } from './application/queries/security-device/get-security-device-list-by-userId.query-handler';
+import {
+  SecurityDevice,
+  SecurityDeviceSchema,
+} from './domain/security-device.entity';
+import { SecurityDeviceFactory } from './application/factories/security-device.factory';
+import { SecurityDeviceController } from './api/security-device.controller';
 
 const commandHandlers = [
   CreateUserUseCase,
   DeleteUserUseCase,
   LoginUserUseCase,
+  LogoutUserUseCase,
   NewPasswordUserUseCase,
   PasswordRecoveryUserUseCase,
   RegisterConfirmationUserUseCase,
   RegisterEmailResendingUserUseCase,
   RegisterUserUseCase,
+  RefreshTokenUseCase,
+  CreateSecurityDeviceUseCase,
+  DeleteSecurityDeviceByDeviceIdUseCase,
+  DeleteSecurityDeviceExceptCurrentUseCase,
 ];
 const queryHandlers = [
-  FindUserByConfirmationCodeQueryHandler,
-  FindUserByIdQueryHandler,
-  FindUserByLoginOrEmailOrThrowQueryHandler,
-  FindUserByLoginOrEmailQueryHandler,
-  FindUserByPasswordRecoveryCodeQueryHandler,
   GetUserByIdQueryHandler,
   GetUserListQueryHandler,
+  GetSecurityDeviceListByUserIdHandler,
 ];
 
 @Module({
   imports: [
     MongooseModule.forFeature([{ name: User.name, schema: UserSchema }]),
+    MongooseModule.forFeature([
+      { name: SecurityDevice.name, schema: SecurityDeviceSchema },
+    ]),
     ThrottlerModule.forRoot({ throttlers: [{ ttl: 10000, limit: 5 }] }),
     NotificationsModule,
     JwtModule,
   ],
-  controllers: [AuthController, UsersController],
+  controllers: [AuthController, UsersController, SecurityDeviceController],
   providers: [
     {
       provide: ACCESS_TOKEN_STRATEGY_INJECT_TOKEN,
@@ -91,10 +104,13 @@ const queryHandlers = [
     AuthService,
     UsersExternalService,
     UsersRepository,
+    SecurityDeviceRepository,
     UsersQueryRepository,
+    SecurityDeviceQueryRepository,
     UsersExternalQueryRepository,
     TokenService,
     CryptoService,
+    SecurityDeviceFactory,
     OptionalBearerAuthGuard,
     BearerAuthGuard,
     UsersFactory,
