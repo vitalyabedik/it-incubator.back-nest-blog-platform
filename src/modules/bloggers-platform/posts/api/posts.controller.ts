@@ -18,13 +18,13 @@ import { PaginatedViewDto } from '../../../../core/dto/base.paginated.view-dto';
 import { ID_PARAMETER } from '../../../../core/constants/params';
 import { ObjectIdValidationPipe } from '../../../../core/pipes/object-id-validation-transformation-pipe.service';
 
-import { UseOptionalBearerGuard } from '../../../user-accounts/guards/decorators/use-optional-bearer-guard.decorator';
-import { UseBasicGuard } from '../../../user-accounts/guards/decorators/use-basic-guard.decorator';
-import { UseBearerGuard } from '../../../user-accounts/guards/decorators/use-bearer-guard.decorator';
-import { Public } from '../../../user-accounts/guards/decorators/public.decorator';
-import { ExtractUserFromRequest } from '../../../user-accounts/guards/decorators/param/extract-user-from-request.decorator';
-import { UserFromRequestDataInputDto } from '../../../user-accounts/api/input-dto/user/user-from-request-data-input.dto';
-import { ExtractOptionalUserFromRequest } from '../../../user-accounts/guards/decorators/param/extract-optional-user-from-request.decorator';
+import { UseOptionalBearerGuard } from '../../../user-accounts/auth/guards/decorators/use-optional-bearer-guard.decorator';
+import { UseBasicGuard } from '../../../user-accounts/auth/guards/decorators/use-basic-guard.decorator';
+import { UseBearerGuard } from '../../../user-accounts/auth/guards/decorators/use-bearer-guard.decorator';
+import { Public } from '../../../user-accounts/auth/guards/decorators/public.decorator';
+import { ExtractUserFromRequest } from '../../../user-accounts/auth/guards/decorators/param/extract-user-from-request.decorator';
+import { ExtractOptionalUserFromRequest } from '../../../user-accounts/auth/guards/decorators/param/extract-optional-user-from-request.decorator';
+import { UserFromRequestDataInputDto } from '../../../user-accounts/users/api/input-dto/user-from-request-data-input.dto';
 
 import { GetCommentsQueryParams } from '../../comments/api/input-dto/get-comments-query-params.input-dto';
 import { GetCommentListByPostIdQuery } from '../../comments/application/queries/get-comment-list-by-postId.query-handler';

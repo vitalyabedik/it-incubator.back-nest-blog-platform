@@ -35,7 +35,7 @@ export class CommentsQueryRepository {
 
     const [comments, totalCount] = await Promise.all([
       this.CommentModel.find(filter)
-        .sort(query.getSortOptions())
+        // .sort(query.getSortOptions())
         .skip(query.calculateSkip())
         .limit(query.pageSize)
         .lean()

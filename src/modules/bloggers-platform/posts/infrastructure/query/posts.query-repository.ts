@@ -33,7 +33,7 @@ export class PostsQueryRepository {
 
     const [posts, totalCount] = await Promise.all([
       this.PostModel.find(filter)
-        .sort(query.getSortOptions())
+        // .sort(query.getSortOptions())
         .skip(query.calculateSkip())
         .limit(query.pageSize)
         .lean()
@@ -64,7 +64,7 @@ export class PostsQueryRepository {
 
     const [posts, totalCount] = await Promise.all([
       this.PostModel.find(filter)
-        .sort(query.getSortOptions())
+        // .sort(query.getSortOptions())
         .skip(query.calculateSkip())
         .limit(query.pageSize)
         .lean()

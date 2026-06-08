@@ -22,7 +22,7 @@ export class BlogsQueryRepository {
 
     const [items, totalCount] = await Promise.all([
       this.BlogModel.find(filter)
-        .sort(query.getSortOptions())
+        // .sort(query.getSortOptions())
         .skip(query.calculateSkip())
         .limit(query.pageSize)
         .lean()

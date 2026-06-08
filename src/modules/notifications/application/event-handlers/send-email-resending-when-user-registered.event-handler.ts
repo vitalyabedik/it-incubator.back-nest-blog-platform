@@ -1,5 +1,5 @@
 import { EventsHandler, IEventHandler } from '@nestjs/cqrs';
-import { UserRegisteredEmailResendingEvent } from '../../../user-accounts/domain/events/user-registered-email-resending.event';
+import { UserRegisteredEmailResendingEvent } from '../../../user-accounts/auth/application/events/user-registered-email-resending.event';
 import { EmailService } from '../email.service';
 
 @EventsHandler(UserRegisteredEmailResendingEvent)
