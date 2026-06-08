@@ -18,10 +18,10 @@ import { PaginatedViewDto } from '../../../../core/dto/base.paginated.view-dto';
 import { ID_PARAMETER } from '../../../../core/constants/params';
 import { ObjectIdValidationPipe } from '../../../../core/pipes/object-id-validation-transformation-pipe.service';
 
-import { UseBasicGuard } from '../../../user-accounts/guards/decorators/use-basic-guard.decorator';
-import { UseOptionalBearerGuard } from '../../../user-accounts/guards/decorators/use-optional-bearer-guard.decorator';
-import { ExtractOptionalUserFromRequest } from '../../../user-accounts/guards/decorators/param/extract-optional-user-from-request.decorator';
-import { UserFromRequestDataInputDto } from '../../../user-accounts/api/input-dto/user/user-from-request-data-input.dto';
+import { UseBasicGuard } from '../../../user-accounts/auth/guards/decorators/use-basic-guard.decorator';
+import { UseOptionalBearerGuard } from '../../../user-accounts/auth/guards/decorators/use-optional-bearer-guard.decorator';
+import { ExtractOptionalUserFromRequest } from '../../../user-accounts/auth/guards/decorators/param/extract-optional-user-from-request.decorator';
+import { UserFromRequestDataInputDto } from '../../../user-accounts/users/api/input-dto/user-from-request-data-input.dto';
 
 import { GetPostsQueryParams } from '../../posts/api/input-dto/get-posts-query-params.input-dto';
 import { PostViewDto } from '../../posts/application/view-dto/posts.view-dto';

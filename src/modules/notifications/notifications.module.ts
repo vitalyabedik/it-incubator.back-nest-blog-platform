@@ -1,35 +1,22 @@
 import { MailerModule } from '@nestjs-modules/mailer';
-import { ConfigService } from '@nestjs/config';
 import { Module } from '@nestjs/common';
 import { EmailService } from './application/email.service';
 import { EmailTemplates } from './application/email.templates';
-import { UserRegisteredEmailResendingEvent } from '../user-accounts/domain/events/user-registered-email-resending.event';
+import { SendEmailResendingWhenUserRegisteredEventHandler } from './application/event-handlers/send-email-resending-when-user-registered.event-handler';
 import { SendConfirmationEmailWhenUserRegisteredEventHandler } from './application/event-handlers/send-confirmation-email-when-user-registered.event-handler';
 import { SendPasswordRecoveryCodeEventHandler } from './application/event-handlers/send-password-recovery-code.event-handler';
+import { MailerConfig } from './config/mailer.config';
 
 const eventHandlers = [
   SendConfirmationEmailWhenUserRegisteredEventHandler,
-  UserRegisteredEmailResendingEvent,
+  SendEmailResendingWhenUserRegisteredEventHandler,
   SendPasswordRecoveryCodeEventHandler,
 ];
 
 @Module({
   imports: [
     MailerModule.forRootAsync({
-      useFactory: (configService: ConfigService) => {
-        const postService = configService.get('POST_SERVICE');
-        const email = configService.get('EMAIL');
-        const emailPass = configService.get('EMAIL_PASS');
-
-        return {
-          transport: {
-            service: postService,
-            auth: { user: email, pass: emailPass },
-          },
-          defaults: { from: `"Registration" <${email}>` },
-        };
-      },
-      inject: [ConfigService],
+      useClass: MailerConfig,
     }),
   ],
   providers: [EmailService, EmailTemplates, ...eventHandlers],

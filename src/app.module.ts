@@ -1,15 +1,13 @@
 // импорт config module должен быть на верхнем уровне всех импортов
 import { configModule } from './config/config-dynamic-module';
 import { DynamicModule, Module } from '@nestjs/common';
-import { MongooseModule } from '@nestjs/mongoose';
 import { APP_FILTER } from '@nestjs/core';
 
+import { DataBaseModule } from './modules/database/database.module';
 import { TestingModule } from './modules/testing/testing.module';
 import { UserAccountsModule } from './modules/user-accounts/user-accounts.module';
 import { BloggersPlatformModule } from './modules/bloggers-platform/bloggers-platform.module';
 import { NotificationsModule } from './modules/notifications/notifications.module';
-
-import { getDbConfig } from './config/config-db';
 
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
@@ -21,10 +19,7 @@ import { CoreConfig } from './core/config/core.config';
 
 @Module({
   imports: [
-    MongooseModule.forRootAsync({
-      useFactory: getDbConfig,
-      inject: [CoreConfig],
-    }),
+    DataBaseModule,
     UserAccountsModule,
     BloggersPlatformModule,
     TestingModule,

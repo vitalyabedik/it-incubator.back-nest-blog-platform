@@ -12,6 +12,35 @@ export enum EEnvironments {
 
 @Injectable()
 export class CoreConfig {
+  constructor(private configService: ConfigService<any, true>) {
+    configValidationUtility.validateConfig(this);
+  }
+
+  @IsNotEmpty({
+    message: `Установите переменную окружения POSTGRES_DB, пример: my-postgres-db`,
+  })
+  postgresDB: string = String(this.configService.get('POSTGRES_DB'));
+
+  @IsNotEmpty({
+    message: `Установите переменную окружения POSTGRES_USER, example: my-postgres-user`,
+  })
+  postgresUser: string = String(this.configService.get('POSTGRES_USER'));
+
+  @IsNotEmpty({
+    message: `Установите переменную окружения POSTGRES_PASSWORD, example: my-postgres-password`,
+  })
+  postgresPassword: string = String(
+    this.configService.get('POSTGRES_PASSWORD'),
+  );
+
+  @IsNumber(
+    {},
+    {
+      message: `Установите переменную окружения POSTGRES_PORT, example: 3000`,
+    },
+  )
+  postgresPort: number = Number(this.configService.get('POSTGRES_PORT'));
+
   @IsNumber(
     {},
     {
@@ -57,8 +86,4 @@ export class CoreConfig {
     configValidationUtility.convertToBoolean(
       this.configService.get('SEND_INTERNAL_SERVER_ERROR_DETAILS'),
     ) as boolean;
-
-  constructor(private configService: ConfigService<any, true>) {
-    configValidationUtility.validateConfig(this);
-  }
 }

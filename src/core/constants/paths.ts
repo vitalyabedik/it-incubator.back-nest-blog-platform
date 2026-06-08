@@ -14,7 +14,7 @@ export const routersPaths = {
     refreshToken: 'refresh-token',
   },
   users: {
-    root: 'users',
+    root: 'sa/users',
   },
   security: {
     root: 'security',

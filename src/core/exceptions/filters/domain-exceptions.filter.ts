@@ -6,7 +6,7 @@ import {
   Inject,
 } from '@nestjs/common';
 import { Request, Response } from 'express';
-import { CoreConfig } from '../../../core/config/core.config';
+import { CoreConfig, EEnvironments } from '../../../core/config/core.config';
 import { DomainException, Extension } from '../domain-exceptions';
 import { EDomainExceptionCode } from '../domain-exception-codes';
 import { TErrorResponseBody } from './error-response-body.type';
@@ -53,9 +53,9 @@ export class DomainHttpExceptionsFilter implements ExceptionFilter {
     exception: DomainException,
     requestUrl: string,
   ): TErrorResponseBody | { errorsMessages: Extension[] } {
-    const isTest = this.coreConfig.env === 'test';
+    const isStaging = this.coreConfig.env === EEnvironments.STAGING;
 
-    if (isTest) {
+    if (isStaging) {
       return {
         errorsMessages: exception.extensions,
       };

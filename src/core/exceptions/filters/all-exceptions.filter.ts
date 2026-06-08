@@ -6,7 +6,7 @@ import {
   Inject,
 } from '@nestjs/common';
 import { Request, Response } from 'express';
-import { CoreConfig } from '../../../core/config/core.config';
+import { CoreConfig, EEnvironments } from '../../../core/config/core.config';
 import { EDomainExceptionCode } from '../domain-exception-codes';
 import { TErrorResponseBody } from './error-response-body.type';
 
@@ -33,7 +33,7 @@ export class AllHttpExceptionsFilter implements ExceptionFilter {
     requestUrl: string,
     message: string,
   ): TErrorResponseBody {
-    const isProduction = this.coreConfig.env === 'production';
+    const isProduction = this.coreConfig.env === EEnvironments.PRODUCTION;
 
     if (isProduction) {
       return {

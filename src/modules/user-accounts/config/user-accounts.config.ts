@@ -5,6 +5,10 @@ import { configValidationUtility } from '../../../config/config-validation.utili
 
 @Injectable()
 export class UserAccountsConfig {
+  constructor(private configService: ConfigService<any, true>) {
+    configValidationUtility.validateConfig(this);
+  }
+
   @IsNotEmpty({
     message: 'Установите переменную окружения ADMIN_USERNAME',
   })
@@ -42,8 +46,4 @@ export class UserAccountsConfig {
   refreshTokenExpireIn: number = this.configService.get(
     'REFRESH_TOKEN_EXPIRE_IN',
   );
-
-  constructor(private configService: ConfigService<any, true>) {
-    configValidationUtility.validateConfig(this);
-  }
 }
