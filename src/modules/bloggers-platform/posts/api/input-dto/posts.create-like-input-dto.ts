@@ -1,9 +1,9 @@
 import { IsEnum } from 'class-validator';
 import { ELikeStatus } from '../../../likes/constants/like-status';
-import { TPostDocument } from '../../domain/post.entity';
+import { IPostEntityDto } from '../../domain/dto/post.entity.dto';
 
 export class CreatePostLikeInputDto {
-  post: TPostDocument;
+  post: IPostEntityDto;
   userId: string;
   login: string;
 

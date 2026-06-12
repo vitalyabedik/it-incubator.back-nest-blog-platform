@@ -1,29 +1,31 @@
-import { CommandHandler, ICommandHandler, QueryBus } from '@nestjs/cqrs';
-import { TPostDocument } from '../../domain/post.entity';
+import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
+import { DomainException } from '../../../../../core/exceptions/domain-exceptions';
+import { EDomainExceptionCode } from '../../../../../core/exceptions/domain-exception-codes';
 import { PostsRepository } from '../../infrastructure/posts.repository';
-import { FindPostByIdQuery } from '../queries/find-post-by-id.query-handler';
+import { errorMessages } from '../../constants/texts';
+import { IDeletePostDto } from './dto/delete-post.dto';
 
 export class DeletePostCommand {
-  constructor(public postId: string) {}
+  constructor(public dto: IDeletePostDto) {}
 }
 
 @CommandHandler(DeletePostCommand)
 export class DeletePostUseCase implements ICommandHandler<
   DeletePostCommand,
-  void
+  boolean
 > {
-  constructor(
-    private postsRepository: PostsRepository,
-    private readonly queryBus: QueryBus,
-  ) {}
+  constructor(private postsRepository: PostsRepository) {}
 
-  async execute({ postId }: DeletePostCommand): Promise<void> {
-    const post = await this.queryBus.execute<FindPostByIdQuery, TPostDocument>(
-      new FindPostByIdQuery(postId),
-    );
+  async execute({ dto }: DeletePostCommand): Promise<boolean> {
+    const isDeleted = await this.postsRepository.delete(dto);
 
-    post.softDelete();
+    if (!isDeleted) {
+      throw new DomainException({
+        code: EDomainExceptionCode.NotFound,
+        message: errorMessages.notFound,
+      });
+    }
 
-    await this.postsRepository.save(post);
+    return true;
   }
 }

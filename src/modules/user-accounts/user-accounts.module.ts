@@ -67,7 +67,7 @@ const queryHandlers = [
 
 @Module({
   imports: [
-    ThrottlerModule.forRoot({ throttlers: [{ ttl: 10000, limit: 5 }] }),
+    // ThrottlerModule.forRoot({ throttlers: [{ ttl: 10000, limit: 5 }] }),
     NotificationsModule,
     JwtModule,
   ],

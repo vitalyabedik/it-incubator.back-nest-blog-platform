@@ -4,12 +4,10 @@ import { JwtModule } from '@nestjs/jwt';
 
 import { UserAccountsModule } from '../user-accounts/user-accounts.module';
 
+import { SuperAdminBlogsController } from './blogs/api/sa-blogs.controller';
 import { BlogsController } from './blogs/api/blogs.controller';
 import { BlogsRepository } from './blogs/infrastructure/blogs.repository';
-import { BlogsExternalRepository } from './blogs/infrastructure/external/blogs.external-repository';
 import { BlogsQueryRepository } from './blogs/infrastructure/query/blogs.query-repository';
-import { Blog, BlogSchema } from './blogs/domain/blog.entity';
-import { FindBlogByIdQueryHandler } from './blogs/application/queries/find-blog-by-id.query-handler';
 import { GetBlogByIdQueryHandler } from './blogs/application/queries/get-blog-by-id.query-handler';
 import { GetBlogListQueryHandler } from './blogs/application/queries/get-blog-list.query-handler';
 import { CreateBlogUseCase } from './blogs/application/usecases/create-blog.usecase';
@@ -18,11 +16,9 @@ import { UpdateBlogUseCase } from './blogs/application/usecases/update-blog.usec
 import { BlogsFactory } from './blogs/application/factories/blogs.factory';
 
 import { PostsController } from './posts/api/posts.controller';
-import { PostsRepository } from './posts/infrastructure/posts.repository';
-import { PostsExternalRepository } from './posts/infrastructure/external/posts.external-repository';
+
 import { PostsQueryRepository } from './posts/infrastructure/query/posts.query-repository';
-import { Post, PostSchema } from './posts/domain/post.entity';
-import { FindPostByIdQueryHandler } from './posts/application/queries/find-post-by-id.query-handler';
+import { PostsRepository } from './posts/infrastructure/posts.repository';
 import { GetPostByIdQueryHandler } from './posts/application/queries/get-post-by-id.query-handler';
 import { GetPostListByBlogIdQueryHandler } from './posts/application/queries/get-post-list-by-blogId.query-handler';
 import { GetPostListQueryHandler } from './posts/application/queries/get-post-list.query-handler';
@@ -72,10 +68,8 @@ const commandHandlers = [
   UpdateCommentLikeUseCase,
 ];
 const queryHandlers = [
-  FindBlogByIdQueryHandler,
   GetBlogByIdQueryHandler,
   GetBlogListQueryHandler,
-  FindPostByIdQueryHandler,
   GetPostByIdQueryHandler,
   GetPostListByBlogIdQueryHandler,
   GetPostListQueryHandler,
@@ -85,14 +79,17 @@ const queryHandlers = [
 
 @Module({
   imports: [
-    MongooseModule.forFeature([{ name: Blog.name, schema: BlogSchema }]),
-    MongooseModule.forFeature([{ name: Post.name, schema: PostSchema }]),
     MongooseModule.forFeature([{ name: Comment.name, schema: CommentSchema }]),
     MongooseModule.forFeature([{ name: Like.name, schema: LikeSchema }]),
     JwtModule,
     UserAccountsModule,
   ],
-  controllers: [BlogsController, PostsController, CommentsController],
+  controllers: [
+    SuperAdminBlogsController,
+    BlogsController,
+    PostsController,
+    CommentsController,
+  ],
   providers: [
     BlogsRepository,
     PostsRepository,
@@ -101,8 +98,7 @@ const queryHandlers = [
     BlogsQueryRepository,
     PostsQueryRepository,
     CommentsQueryRepository,
-    BlogsExternalRepository,
-    PostsExternalRepository,
+
     CommentsExternalRepository,
     LikesExternalRepository,
     BlogsFactory,
@@ -112,11 +108,6 @@ const queryHandlers = [
     ...commandHandlers,
     ...queryHandlers,
   ],
-  exports: [
-    BlogsExternalRepository,
-    PostsExternalRepository,
-    CommentsExternalRepository,
-    LikesExternalRepository,
-  ],
+  exports: [CommentsExternalRepository, LikesExternalRepository],
 })
 export class BloggersPlatformModule {}

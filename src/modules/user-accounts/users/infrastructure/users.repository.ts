@@ -5,7 +5,7 @@ import { EDomainExceptionCode } from '../../../../core/exceptions/domain-excepti
 import { DomainException } from '../../../../core/exceptions/domain-exceptions';
 import { errorMessages } from '../constants/texts';
 import { IUserEntityDto } from '../domain/dto/user.entity.dto';
-import { TCreateUserDto } from './query/dto/create-user.params.dto';
+import { TCreateUserDto } from './dto/create-user.params.dto';
 import { IUserConfirmationEntityDto } from '../domain/dto/user-confirmation.entity.dto';
 import { IPasswordRecoveryEntityDto } from '../domain/dto/password-recovery.entity.dto';
 

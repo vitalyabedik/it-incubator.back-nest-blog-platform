@@ -41,7 +41,7 @@ import { UserFromRequestDataInputDto } from '../../users/api/input-dto/user-from
 import { LogoutUserCommand } from '../application/usecases/logout-user.usecase';
 import { RefreshTokenCommand } from '../application/usecases/refresh-token.usecase';
 
-@AppThrottle({ limit: 5, ttl: 10_000 })
+// @AppThrottle({ limit: 5, ttl: 10_000 })
 @Controller(routersPaths.auth.root)
 export class AuthController {
   constructor(private readonly commandBus: CommandBus) {
@@ -150,7 +150,6 @@ export class AuthController {
   @UseBearerGuard()
   async me(@ExtractUserFromRequest() dto: UserFromRequestDataInputDto) {
     return {
-      email: dto.email,
       login: dto.login,
       userId: dto.userId,
     };

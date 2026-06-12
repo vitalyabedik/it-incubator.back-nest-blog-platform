@@ -27,36 +27,32 @@ export class UpdatePostLikeStatusUseCase implements ICommandHandler<
     postId,
     dto,
   }: UpdatePostLikeStatusCommand): Promise<boolean> {
-    const { userId, login, likeStatus } = dto;
+    // const { userId, login, likeStatus } = dto;
+    // const post = await this.postsRepository.findPostById(postId);
+    // const parentId = post._id.toString();
+    // const existingLike = await this.likesRepository.findLikeByFilter({
+    //   parentId,
+    //   authorId: userId,
+    // });
+    // if (!existingLike) {
+    //   return this.commandBus.execute(
+    //     new CreatePostLikeCommand({
+    //       post,
+    //       userId,
+    //       login,
+    //       likeStatus,
+    //     }),
+    //   );
+    // }
+    // if (likeStatus === existingLike.status) return true;
+    // return this.commandBus.execute(
+    //   new UpdatePostLikeCommand({
+    //     like: existingLike,
+    //     post,
+    //     likeStatus,
+    //   }),
+    // );
 
-    const post = await this.postsRepository.findPostById(postId);
-
-    const parentId = post._id.toString();
-
-    const existingLike = await this.likesRepository.findLikeByFilter({
-      parentId,
-      authorId: userId,
-    });
-
-    if (!existingLike) {
-      return this.commandBus.execute(
-        new CreatePostLikeCommand({
-          post,
-          userId,
-          login,
-          likeStatus,
-        }),
-      );
-    }
-
-    if (likeStatus === existingLike.status) return true;
-
-    return this.commandBus.execute(
-      new UpdatePostLikeCommand({
-        like: existingLike,
-        post,
-        likeStatus,
-      }),
-    );
+    return true;
   }
 }

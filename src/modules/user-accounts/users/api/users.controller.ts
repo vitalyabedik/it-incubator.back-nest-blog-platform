@@ -23,7 +23,7 @@ import { DeleteUserCommand } from '../application/usecases/delete-user.usecase';
 import { CreateUserInputDto } from './input-dto/users.create-input-dto';
 import { GetUsersQueryParamsDto } from './input-dto/get-users-query-params.input-dto';
 
-@Controller(routersPaths.users.root)
+@Controller(`${routersPaths.sa}/${routersPaths.users.root}`)
 @UseBasicGuard()
 @ApiBasicAuth('basicAuth')
 export class UsersController {

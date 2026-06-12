@@ -1,7 +1,8 @@
-import { CommandHandler, ICommandHandler, QueryBus } from '@nestjs/cqrs';
-import { TBlogDocument } from '../../domain/blog.entity';
+import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
 import { BlogsRepository } from '../../infrastructure/blogs.repository';
-import { FindBlogByIdQuery } from '../queries/find-blog-by-id.query-handler';
+import { DomainException } from '../../../../../core/exceptions/domain-exceptions';
+import { EDomainExceptionCode } from '../../../../../core/exceptions/domain-exception-codes';
+import { errorMessages } from '../../constants/texts';
 
 export class DeleteBlogCommand {
   constructor(public blogId: string) {}
@@ -10,20 +11,20 @@ export class DeleteBlogCommand {
 @CommandHandler(DeleteBlogCommand)
 export class DeleteBlogUseCase implements ICommandHandler<
   DeleteBlogCommand,
-  void
+  boolean
 > {
-  constructor(
-    private blogsRepository: BlogsRepository,
-    private readonly queryBus: QueryBus,
-  ) {}
+  constructor(private blogsRepository: BlogsRepository) {}
 
-  async execute({ blogId }: DeleteBlogCommand): Promise<void> {
-    const blog = await this.queryBus.execute<FindBlogByIdQuery, TBlogDocument>(
-      new FindBlogByIdQuery(blogId),
-    );
+  async execute({ blogId }: DeleteBlogCommand): Promise<boolean> {
+    const isDeleted = await this.blogsRepository.softDelete(blogId);
 
-    blog.softDelete();
+    if (!isDeleted) {
+      throw new DomainException({
+        code: EDomainExceptionCode.NotFound,
+        message: errorMessages.notFound,
+      });
+    }
 
-    await this.blogsRepository.save(blog);
+    return true;
   }
 }

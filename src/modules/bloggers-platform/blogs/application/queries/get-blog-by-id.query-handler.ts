@@ -14,6 +14,8 @@ export class GetBlogByIdQueryHandler implements IQueryHandler<
   constructor(private blogsQueryRepository: BlogsQueryRepository) {}
 
   async execute({ blogId }: GetBlogByIdQuery): Promise<BlogViewDto> {
-    return this.blogsQueryRepository.getBlogById(blogId);
+    const blog = await this.blogsQueryRepository.getBlogByIdOrThrow(blogId);
+
+    return BlogViewDto.mapToView(blog);
   }
 }

@@ -22,8 +22,10 @@ export class TestingController {
        "user_device_sessions", 
        "user_confirmations", 
        "user_recovery_codes",
-       "users"
-       RESTART IDENTITY CASCADE;
+       "users",
+       "blogs",
+       "posts"
+        RESTART IDENTITY CASCADE;
       `,
     );
 

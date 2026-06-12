@@ -1,7 +1,6 @@
 import {
   Body,
   Controller,
-  Delete,
   Get,
   HttpCode,
   HttpStatus,
@@ -17,9 +16,9 @@ import { routersPaths } from '../../../../core/constants/paths';
 import { PaginatedViewDto } from '../../../../core/dto/base.paginated.view-dto';
 import { ID_PARAMETER } from '../../../../core/constants/params';
 import { ObjectIdValidationPipe } from '../../../../core/pipes/object-id-validation-transformation-pipe.service';
+import { UUIDValidationPipe } from '../../../../core/pipes/uuid-validation-pipe';
 
 import { UseOptionalBearerGuard } from '../../../user-accounts/auth/guards/decorators/use-optional-bearer-guard.decorator';
-import { UseBasicGuard } from '../../../user-accounts/auth/guards/decorators/use-basic-guard.decorator';
 import { UseBearerGuard } from '../../../user-accounts/auth/guards/decorators/use-bearer-guard.decorator';
 import { Public } from '../../../user-accounts/auth/guards/decorators/public.decorator';
 import { ExtractUserFromRequest } from '../../../user-accounts/auth/guards/decorators/param/extract-user-from-request.decorator';
@@ -36,12 +35,7 @@ import { GetCommentByIdQuery } from '../../comments/application/queries/get-comm
 import { PostViewDto } from '../application/view-dto/posts.view-dto';
 import { GetPostListQuery } from '../application/queries/get-post-list.query-handler';
 import { GetPostByIdQuery } from '../application/queries/get-post-by-id.query-handler';
-import { UpdatePostCommand } from '../application/usecases/update-post.usecase';
-import { CreatePostCommand } from '../application/usecases/create-post.usecase';
-import { DeletePostCommand } from '../application/usecases/delete-post.usecase';
 import { GetPostsQueryParams } from './input-dto/get-posts-query-params.input-dto';
-import { CreatePostInputDto } from './input-dto/posts.create-input-dto';
-import { UpdatePostInputDto } from './input-dto/posts.update-input-dto';
 import { UpdatePostLikeStatusInputDto } from './input-dto/posts.update-like-status-input-dto';
 import { UpdatePostLikeStatusCommand } from '../application/usecases/update-post-like-status.usecase';
 
@@ -70,7 +64,7 @@ export class PostsController {
   @Get(routersPaths.byId)
   @UseOptionalBearerGuard()
   async getPostById(
-    @Param(ID_PARAMETER, ObjectIdValidationPipe) id: string,
+    @Param(ID_PARAMETER, UUIDValidationPipe) id: string,
     @ExtractOptionalUserFromRequest()
     userDto: UserFromRequestDataInputDto | null,
   ): Promise<PostViewDto> {
@@ -79,18 +73,6 @@ export class PostsController {
         postId: id,
         userId: userDto?.userId,
       }),
-    );
-  }
-
-  @Post()
-  @UseBasicGuard()
-  async createPost(@Body() body: CreatePostInputDto): Promise<PostViewDto> {
-    const postId = await this.commandBus.execute<CreatePostCommand, string>(
-      new CreatePostCommand(body),
-    );
-
-    return this.queryBus.execute<GetPostByIdQuery, PostViewDto>(
-      new GetPostByIdQuery({ postId }),
     );
   }
 
@@ -113,19 +95,6 @@ export class PostsController {
     );
   }
 
-  @Put(routersPaths.byId)
-  @UseBasicGuard()
-  @ApiParam({ name: ID_PARAMETER })
-  @HttpCode(HttpStatus.NO_CONTENT)
-  async updatePost(
-    @Param(ID_PARAMETER, ObjectIdValidationPipe) id: string,
-    @Body() body: UpdatePostInputDto,
-  ): Promise<void> {
-    return this.commandBus.execute<UpdatePostCommand, void>(
-      new UpdatePostCommand(id, body),
-    );
-  }
-
   @Put(routersPaths.likeStatus)
   @UseBearerGuard()
   @ApiParam({ name: ID_PARAMETER })
@@ -141,18 +110,6 @@ export class PostsController {
         userId: userDto.userId,
         login: userDto.login,
       }),
-    );
-  }
-
-  @Delete(routersPaths.byId)
-  @UseBasicGuard()
-  @ApiParam({ name: ID_PARAMETER })
-  @HttpCode(HttpStatus.NO_CONTENT)
-  async deletePost(
-    @Param(ID_PARAMETER, ObjectIdValidationPipe) id: string,
-  ): Promise<void> {
-    return this.commandBus.execute<DeletePostCommand, void>(
-      new DeletePostCommand(id),
     );
   }
 

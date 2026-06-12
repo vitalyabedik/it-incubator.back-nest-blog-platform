@@ -1,31 +1,73 @@
-import { InjectModel } from '@nestjs/mongoose';
+import { InjectDataSource } from '@nestjs/typeorm';
+import { DataSource } from 'typeorm';
 import { Injectable } from '@nestjs/common';
-import { DomainException } from '../../../../core/exceptions/domain-exceptions';
-import { EDomainExceptionCode } from '../../../../core/exceptions/domain-exception-codes';
-import { errorMessages } from '../constants/texts';
-import { Blog, TBlogDocument, TBlogModel } from '../domain/blog.entity';
+import { IBlogEntityDto } from '../domain/dto/blog.entity.dto';
+import { ICreateBlogParamsDto } from './dto/create-blog.params.dto';
+import { IUpdateBlogParamsDto } from './dto/update-blog.params.dto';
+import { IBlogRepositoryDto } from './dto/blog-repository.dto';
 
 @Injectable()
 export class BlogsRepository {
-  constructor(@InjectModel(Blog.name) private BlogModel: TBlogModel) {}
+  constructor(@InjectDataSource() protected dataSource: DataSource) {}
 
-  async findBlogById(id: string): Promise<TBlogDocument> {
-    const blog = await this.BlogModel.findOne({
-      _id: id,
-      deletedAt: null,
-    }).exec();
-
-    if (!blog) {
-      throw new DomainException({
-        code: EDomainExceptionCode.NotFound,
-        message: errorMessages.notFound,
-      });
-    }
+  async findBlogById(id: string): Promise<IBlogEntityDto | null> {
+    const [blog]: IBlogEntityDto[] = await this.dataSource.query(
+      `
+          SELECT *
+            FROM blogs
+            WHERE id=$1 AND "deletedAt" IS NULL
+        `,
+      [id],
+    );
+    if (!blog) return null;
 
     return blog;
   }
 
-  async save(blog: TBlogDocument) {
-    await blog.save();
+  async createBlog(dto: ICreateBlogParamsDto): Promise<IBlogEntityDto> {
+    const { name, description, websiteUrl } = dto;
+
+    const [blog]: IBlogRepositoryDto[] = await this.dataSource.query(
+      `
+          INSERT INTO blogs (name, description, "websiteUrl")
+            VALUES ($1, $2, $3)
+            RETURNING *
+        `,
+      [name, description, websiteUrl],
+    );
+
+    return blog;
+  }
+
+  async updateBlog(dto: IUpdateBlogParamsDto): Promise<boolean> {
+    const { blogId, name, description, websiteUrl } = dto;
+
+    const [rows]: [{ id: string }[], number] = await this.dataSource.query(
+      `
+          UPDATE blogs
+            SET name = $1,
+                description = $2,
+                "websiteUrl" = $3
+            WHERE blogs.id = $4 AND "deletedAt" IS NULL
+            RETURNING id
+        `,
+      [name, description, websiteUrl, blogId],
+    );
+
+    return rows.length > 0;
+  }
+
+  async softDelete(blogId: string) {
+    const [rows]: [{ id: string }[], number] = await this.dataSource.query(
+      `
+          UPDATE blogs
+            SET "deletedAt" = NOW()
+            WHERE blogs.id = $1 AND "deletedAt" IS NULL
+            RETURNING id
+        `,
+      [blogId],
+    );
+
+    return rows.length > 0;
   }
 }

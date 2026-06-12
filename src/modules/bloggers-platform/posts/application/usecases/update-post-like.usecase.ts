@@ -18,17 +18,17 @@ export class UpdatePostLikeUseCase implements ICommandHandler<
   ) {}
 
   async execute({ dto }: UpdatePostLikeCommand): Promise<boolean> {
-    const { like, post, likeStatus } = dto;
+    // const { like, post, likeStatus } = dto;
 
-    const updatedPost = post.updatePostLikesByIncomingLikeStatusAndLike({
-      like,
-      likeStatus,
-    });
+    // const updatedPost = post.updatePostLikesByIncomingLikeStatusAndLike({
+    //   like,
+    //   likeStatus,
+    // });
 
-    const updatedLike = like.updateLikeStatus(likeStatus);
+    // const updatedLike = like.updateLikeStatus(likeStatus);
 
-    await this.likesRepository.save(updatedLike);
-    await this.postsRepository.save(updatedPost);
+    // await this.likesRepository.save(updatedLike);
+    // await this.postsRepository.save(updatedPost);
 
     return true;
   }

@@ -1,12 +1,12 @@
 import { IQueryHandler, QueryHandler } from '@nestjs/cqrs';
 import { PaginatedViewDto } from '../../../../../core/dto/base.paginated.view-dto';
 import { UsersQueryRepository } from '../../infrastructure/query/users.query-repository';
-import { GetUsersQueryParamsDto } from '../../api/input-dto/get-users-query-params.input-dto';
 import { IGetUsersParamsDto } from '../../infrastructure/query/dto/get-users.params.dto';
+import { IGetUserListQueryDto } from '../dto/get-user-list.query.dto';
 import { UserViewDto } from '../view-dto/users.view-dto';
 
 export class GetUserListQuery {
-  constructor(public queryParams: GetUsersQueryParamsDto) {}
+  constructor(public queryParams: IGetUserListQueryDto) {}
 }
 
 @QueryHandler(GetUserListQuery)

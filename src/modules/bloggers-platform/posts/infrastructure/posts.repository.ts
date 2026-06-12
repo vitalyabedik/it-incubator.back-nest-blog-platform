@@ -1,31 +1,82 @@
-import { InjectModel } from '@nestjs/mongoose';
+import { InjectDataSource } from '@nestjs/typeorm';
+import { DataSource } from 'typeorm';
 import { Injectable } from '@nestjs/common';
-import { DomainException } from '../../../../core/exceptions/domain-exceptions';
-import { EDomainExceptionCode } from '../../../../core/exceptions/domain-exception-codes';
-import { errorMessages } from '../constants/texts';
-import { Post, TPostDocument, TPostModel } from '../domain/post.entity';
+import { IPostEntityDto } from '../domain/dto/post.entity.dto';
+import { ICreatePostParamsDto } from './dto/create-post.params.dto';
+import { IUpdatePostParamsDto } from './dto/update-post.params.dto';
+import { IDeletePostParamsDto } from './dto/delete-post.params.dto';
 
 @Injectable()
 export class PostsRepository {
-  constructor(@InjectModel(Post.name) private PostModel: TPostModel) {}
+  constructor(@InjectDataSource() protected dataSource: DataSource) {}
 
-  async findPostById(id: string): Promise<TPostDocument> {
-    const post = await this.PostModel.findOne({
-      _id: id,
-      deletedAt: null,
-    }).exec();
-
-    if (!post) {
-      throw new DomainException({
-        code: EDomainExceptionCode.NotFound,
-        message: errorMessages.notFound,
-      });
-    }
+  async findPostById(
+    postId: string,
+  ): Promise<(IPostEntityDto & { blogName: string }) | null> {
+    const [post]: (IPostEntityDto & { blogName: string })[] =
+      await this.dataSource.query(
+        `
+          SELECT *, b."name" as blogName
+            FROM posts p
+            LEFT JOIN blogs b on p."blogId" = b."id"
+            WHERE p."id" = $1 AND p."deletedAt" IS NULL
+          `,
+        [postId],
+      );
+    if (!post) return null;
 
     return post;
   }
 
-  async save(post: TPostDocument) {
-    await post.save();
+  async create(
+    dto: ICreatePostParamsDto,
+  ): Promise<IPostEntityDto & { blogName: string }> {
+    const { blogId, title, shortDescription, content } = dto;
+
+    const [post]: (IPostEntityDto & { blogName: string })[] =
+      await this.dataSource.query(
+        `
+          INSERT INTO "posts" ("blogId", title, "shortDescription", content)
+            VALUES ($1, $2, $3, $4)
+            RETURNING *, (SELECT name FROM blogs WHERE id = $1) as "blogName"
+        `,
+        [blogId, title, shortDescription, content],
+      );
+
+    return post;
+  }
+
+  async update(dto: IUpdatePostParamsDto) {
+    const { blogId, postId, title, shortDescription, content } = dto;
+
+    const [rows]: [{ id: string }[], number] = await this.dataSource.query(
+      `
+          UPDATE "posts"
+            SET "title" = $3,
+                "shortDescription" = $4,
+                "content" = $5
+            WHERE "blogId" = $1 AND "id" = $2 AND "deletedAt" IS NULL
+            RETURNING id
+        `,
+      [blogId, postId, title, shortDescription, content],
+    );
+
+    return rows.length > 0;
+  }
+
+  async delete(dto: IDeletePostParamsDto) {
+    const { blogId, postId } = dto;
+
+    const [rows]: [{ id: string }[], number] = await this.dataSource.query(
+      `
+          UPDATE "posts"
+            SET "deletedAt" = NOW()
+            WHERE "blogId" = $1 AND "id" = $2 AND "deletedAt" IS NULL
+            RETURNING id
+        `,
+      [blogId, postId],
+    );
+
+    return rows.length > 0;
   }
 }
