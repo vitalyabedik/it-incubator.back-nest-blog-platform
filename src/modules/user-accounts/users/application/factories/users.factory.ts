@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { randomUUID } from 'crypto';
-import { CreateUserDto } from '../../dto/create-user.dto';
+import { CreateUserDto } from '../dto/create-user.dto';
 import { CryptoService } from '../../../auth/application/services/crypto.service';
 import { UsersRepository } from '../../infrastructure/users.repository';
 import { UserViewDto } from '../view-dto/users.view-dto';

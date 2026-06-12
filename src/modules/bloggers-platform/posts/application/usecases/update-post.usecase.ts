@@ -1,14 +1,12 @@
-import { CommandHandler, ICommandHandler, QueryBus } from '@nestjs/cqrs';
-import { UpdatePostInputDto } from '../../api/input-dto/posts.update-input-dto';
-import { TPostDocument } from '../../domain/post.entity';
+import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
 import { PostsRepository } from '../../infrastructure/posts.repository';
-import { FindPostByIdQuery } from '../queries/find-post-by-id.query-handler';
+import { DomainException } from '../../../../../core/exceptions/domain-exceptions';
+import { EDomainExceptionCode } from '../../../../../core/exceptions/domain-exception-codes';
+import { errorMessages } from '../../constants/texts';
+import { IUpdatePostDto } from './dto/update-post.dto';
 
 export class UpdatePostCommand {
-  constructor(
-    public postId: string,
-    public dto: UpdatePostInputDto,
-  ) {}
+  constructor(public dto: IUpdatePostDto) {}
 }
 
 @CommandHandler(UpdatePostCommand)
@@ -16,19 +14,17 @@ export class UpdatePostUseCase implements ICommandHandler<
   UpdatePostCommand,
   boolean
 > {
-  constructor(
-    private postsRepository: PostsRepository,
-    private readonly queryBus: QueryBus,
-  ) {}
+  constructor(private postsRepository: PostsRepository) {}
 
-  async execute({ postId, dto }: UpdatePostCommand): Promise<boolean> {
-    const post = await this.queryBus.execute<FindPostByIdQuery, TPostDocument>(
-      new FindPostByIdQuery(postId),
-    );
+  async execute({ dto }: UpdatePostCommand): Promise<boolean> {
+    const isUpdated = await this.postsRepository.update(dto);
 
-    const updatedPost = post.updateInstance(dto);
-
-    await this.postsRepository.save(updatedPost);
+    if (!isUpdated) {
+      throw new DomainException({
+        code: EDomainExceptionCode.NotFound,
+        message: errorMessages.notFound,
+      });
+    }
 
     return true;
   }

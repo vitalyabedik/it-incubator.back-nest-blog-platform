@@ -21,23 +21,23 @@ export class CreatePostLikeUseCase implements ICommandHandler<
   ) {}
 
   async execute({ dto }: CreatePostLikeCommand): Promise<boolean> {
-    const { post, userId, login, likeStatus } = dto;
+    // const { post, userId, login, likeStatus } = dto;
 
-    if (likeStatus === ELikeStatus.None) return true;
+    // if (likeStatus === ELikeStatus.None) return true;
 
-    const parentId = post._id.toString();
+    // const parentId = post._id.toString();
 
-    const createdLike = await this.likesFactory.createLike({
-      authorId: userId,
-      login,
-      parentId,
-      status: likeStatus,
-    });
+    // const createdLike = await this.likesFactory.createLike({
+    //   authorId: userId,
+    //   login,
+    //   parentId,
+    //   status: likeStatus,
+    // });
 
-    const updatedPost = post.updatePostLikesByIncomingLikeStatus(likeStatus);
+    // const updatedPost = post.updatePostLikesByIncomingLikeStatus(likeStatus);
 
-    await this.likesRepository.save(createdLike);
-    await this.postsRepository.save(updatedPost);
+    // await this.likesRepository.save(createdLike);
+    // await this.postsRepository.save(updatedPost);
 
     return true;
   }

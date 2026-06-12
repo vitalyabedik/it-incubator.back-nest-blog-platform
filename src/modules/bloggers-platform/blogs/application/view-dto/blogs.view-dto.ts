@@ -1,4 +1,4 @@
-import { TBlogDocument } from '../../domain/blog.entity';
+import { IBlogEntityDto } from '../../domain/dto/blog.entity.dto';
 
 export class BlogViewDto {
   id: string;
@@ -8,10 +8,10 @@ export class BlogViewDto {
   isMembership: boolean;
   createdAt: string;
 
-  static mapToView(blog: TBlogDocument): BlogViewDto {
+  static mapToView(blog: IBlogEntityDto): BlogViewDto {
     const dto = new BlogViewDto();
 
-    dto.id = blog._id.toString();
+    dto.id = blog.id;
     dto.name = blog.name;
     dto.description = blog.description;
     dto.websiteUrl = blog.websiteUrl;

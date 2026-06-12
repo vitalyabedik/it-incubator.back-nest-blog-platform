@@ -1,4 +1,3 @@
-import { IsString } from 'class-validator';
 import { IsStringWithTrim } from '../../../../../core/decorators/validation/is-string-with-trim';
 import {
   contentConstraints,
@@ -7,9 +6,6 @@ import {
 } from '../../domain/post.constraints';
 
 export class UpdatePostInputDto {
-  @IsString()
-  blogId: string;
-
   @IsStringWithTrim({
     maxLength: titleConstraints.maxLength,
   })

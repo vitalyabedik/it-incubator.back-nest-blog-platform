@@ -1,50 +1,65 @@
-import { InjectModel } from '@nestjs/mongoose';
+import { InjectDataSource } from '@nestjs/typeorm';
+import { DataSource } from 'typeorm';
 import { Injectable } from '@nestjs/common';
-import { PaginatedViewDto } from '../../../../../core/dto/base.paginated.view-dto';
 import { DomainException } from '../../../../../core/exceptions/domain-exceptions';
 import { EDomainExceptionCode } from '../../../../../core/exceptions/domain-exception-codes';
 import { errorMessages } from '../../constants/texts';
-import { Blog, TBlogModel } from '../../domain/blog.entity';
-import { GetBlogsQueryParams } from '../../api/input-dto/get-blogs-query-params.input-dto';
-import { BlogViewDto } from '../../application/view-dto/blogs.view-dto';
+import { IBlogEntityDto } from '../../domain/dto/blog.entity.dto';
+import { IBlogRepositoryDto } from '../dto/blog-repository.dto';
+import { IGetBlogListParamsDto } from './dto/get-blog-list.params.dto';
 
 @Injectable()
 export class BlogsQueryRepository {
-  constructor(
-    @InjectModel(Blog.name)
-    private BlogModel: TBlogModel,
-  ) {}
+  constructor(@InjectDataSource() protected dataSource: DataSource) {}
 
-  async getBlogList(
-    query: GetBlogsQueryParams,
-  ): Promise<PaginatedViewDto<BlogViewDto[]>> {
-    const filter = query.getFilter();
+  async getBlogList(query: IGetBlogListParamsDto): Promise<{
+    blogs: IBlogEntityDto[];
+    totalCount: number;
+  }> {
+    const { searchNameTerm, sortBy, sortDirection, limit, offset } = query;
 
-    const [items, totalCount] = await Promise.all([
-      this.BlogModel.find(filter)
-        // .sort(query.getSortOptions())
-        .skip(query.calculateSkip())
-        .limit(query.pageSize)
-        .lean()
-        .exec(),
-      this.BlogModel.countDocuments(filter).exec(),
+    const blogsPromise: Promise<IBlogRepositoryDto[]> = this.dataSource.query(
+      `
+      SELECT *
+        FROM blogs
+        WHERE (name ILIKE $1) AND "deletedAt" IS NULL
+        ORDER BY ${`"${sortBy}"`} ${sortDirection}
+        LIMIT $2
+        OFFSET $3
+      `,
+      [`%${searchNameTerm || ''}%`, limit, offset],
+    );
+
+    const totalCountPromise: Promise<[{ count: string }]> =
+      this.dataSource.query(
+        `
+      SELECT COUNT(*)
+        FROM blogs
+        WHERE (name ILIKE $1) AND "deletedAt" IS NULL
+      `,
+        [`%${searchNameTerm || ''}%`],
+      );
+
+    const [blogsResult, countResult] = await Promise.all([
+      blogsPromise,
+      totalCountPromise,
     ]);
 
-    const blogsViewList = items.map(BlogViewDto.mapToView);
-
-    return PaginatedViewDto.mapToView({
-      items: blogsViewList,
-      totalCount,
-      page: query.pageNumber,
-      size: query.pageSize,
-    });
+    return {
+      blogs: blogsResult,
+      totalCount: Number(countResult[0].count),
+    };
   }
 
-  async getBlogById(blogId: string): Promise<BlogViewDto> {
-    const blog = await this.BlogModel.findOne({
-      _id: blogId,
-      deletedAt: null,
-    }).exec();
+  async getBlogByIdOrThrow(id: string): Promise<IBlogEntityDto> {
+    const [blog]: IBlogEntityDto[] = await this.dataSource.query(
+      `
+      SELECT *
+        FROM blogs
+        WHERE id=$1 AND "deletedAt" IS NULL
+      `,
+      [id],
+    );
 
     if (!blog) {
       throw new DomainException({
@@ -53,6 +68,6 @@ export class BlogsQueryRepository {
       });
     }
 
-    return BlogViewDto.mapToView(blog);
+    return blog;
   }
 }

@@ -1,5 +1,5 @@
 import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
-import { CreateUserDto } from '../../dto/create-user.dto';
+import { CreateUserDto } from '../dto/create-user.dto';
 import { UsersFactory } from '../factories/users.factory';
 import { UserViewDto } from '../view-dto/users.view-dto';
 import { UsersService } from '../services/users.service';

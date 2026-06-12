@@ -1,14 +1,12 @@
-import { CommandHandler, ICommandHandler, QueryBus } from '@nestjs/cqrs';
-import { TBlogDocument } from '../../domain/blog.entity';
+import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
 import { BlogsRepository } from '../../infrastructure/blogs.repository';
-import { FindBlogByIdQuery } from '../queries/find-blog-by-id.query-handler';
-import { UpdateBlogInputDto } from '../../api/input-dto/blogs.update-input-dto';
+import { DomainException } from '../../../../../core/exceptions/domain-exceptions';
+import { EDomainExceptionCode } from '../../../../../core/exceptions/domain-exception-codes';
+import { errorMessages } from '../../constants/texts';
+import { IUpdateBlogDto } from '../dto/update-blog.dto';
 
 export class UpdateBlogCommand {
-  constructor(
-    public blogId: string,
-    public dto: UpdateBlogInputDto,
-  ) {}
+  constructor(public dto: IUpdateBlogDto) {}
 }
 
 @CommandHandler(UpdateBlogCommand)
@@ -16,19 +14,17 @@ export class UpdateBlogUseCase implements ICommandHandler<
   UpdateBlogCommand,
   boolean
 > {
-  constructor(
-    private blogsRepository: BlogsRepository,
-    private readonly queryBus: QueryBus,
-  ) {}
+  constructor(private blogsRepository: BlogsRepository) {}
 
-  async execute({ blogId, dto }: UpdateBlogCommand): Promise<boolean> {
-    const blog = await this.queryBus.execute<FindBlogByIdQuery, TBlogDocument>(
-      new FindBlogByIdQuery(blogId),
-    );
+  async execute({ dto }: UpdateBlogCommand): Promise<boolean> {
+    const isUpdated = await this.blogsRepository.updateBlog(dto);
 
-    const updatedBlog = blog.updateInstance(dto);
-
-    await this.blogsRepository.save(updatedBlog);
+    if (!isUpdated) {
+      throw new DomainException({
+        code: EDomainExceptionCode.NotFound,
+        message: errorMessages.notFound,
+      });
+    }
 
     return true;
   }

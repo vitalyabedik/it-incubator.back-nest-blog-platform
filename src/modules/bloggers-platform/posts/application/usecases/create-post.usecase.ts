@@ -1,36 +1,26 @@
-import { CommandHandler, ICommandHandler, QueryBus } from '@nestjs/cqrs';
-
-import { FindBlogByIdQuery } from '../../../blogs/application/queries/find-blog-by-id.query-handler';
-import { TBlogDocument } from '../../../blogs/domain/blog.entity';
-
-import { CreatePostInputDto } from '../../api/input-dto/posts.create-input-dto';
-import { PostsRepository } from '../../infrastructure/posts.repository';
+import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
+import { BlogsQueryRepository } from '../../../blogs/infrastructure/query/blogs.query-repository';
 import { PostsFactory } from '../factories/posts.factory';
+import { PostViewDto } from '../view-dto/posts.view-dto';
+import { ICreatePostDto } from './dto/create-post.dto';
 
 export class CreatePostCommand {
-  constructor(public dto: CreatePostInputDto) {}
+  constructor(public dto: ICreatePostDto) {}
 }
 
 @CommandHandler(CreatePostCommand)
 export class CreatePostUseCase implements ICommandHandler<
   CreatePostCommand,
-  string
+  PostViewDto
 > {
   constructor(
-    private readonly queryBus: QueryBus,
-    private postsRepository: PostsRepository,
     private postsFactory: PostsFactory,
+    private blogsQueryRepository: BlogsQueryRepository,
   ) {}
 
-  async execute({ dto }: CreatePostCommand): Promise<string> {
-    const blog = await this.queryBus.execute<FindBlogByIdQuery, TBlogDocument>(
-      new FindBlogByIdQuery(dto.blogId),
-    );
+  async execute({ dto }: CreatePostCommand): Promise<PostViewDto> {
+    await this.blogsQueryRepository.getBlogByIdOrThrow(dto.blogId);
 
-    const createdPost = await this.postsFactory.createPost(blog.name, dto);
-
-    await this.postsRepository.save(createdPost);
-
-    return createdPost._id.toString();
+    return this.postsFactory.createPost(dto);
   }
 }

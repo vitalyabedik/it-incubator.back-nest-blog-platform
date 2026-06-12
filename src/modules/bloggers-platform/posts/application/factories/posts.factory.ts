@@ -1,21 +1,24 @@
 import { Injectable } from '@nestjs/common';
-import { InjectModel } from '@nestjs/mongoose';
-import { CreatePostInputDto } from '../../api/input-dto/posts.create-input-dto';
-import { Post, TPostDocument, TPostModel } from '../../domain/post.entity';
+import { PostsRepository } from '../../infrastructure/posts.repository';
+import { PostViewDto } from '../view-dto/posts.view-dto';
+import { ELikeStatus } from '../../../likes/constants/like-status';
+import { ICreatePostDto } from '../../dto/create-post.dto';
 
 @Injectable()
 export class PostsFactory {
-  constructor(
-    @InjectModel(Post.name)
-    private PostModel: TPostModel,
-  ) {}
+  constructor(private postsRepository: PostsRepository) {}
 
-  async createPost(
-    blogName: string,
-    dto: CreatePostInputDto,
-  ): Promise<TPostDocument> {
-    const newPost = this.PostModel.createInstance(blogName, dto);
+  async createPost(dto: ICreatePostDto) {
+    const newPost = await this.postsRepository.create(dto);
 
-    return newPost;
+    return PostViewDto.mapToView({
+      post: {
+        ...newPost,
+        likesCount: 0,
+        dislikesCount: 0,
+        myStatus: ELikeStatus.None,
+      },
+      newestLikes: [],
+    });
   }
 }

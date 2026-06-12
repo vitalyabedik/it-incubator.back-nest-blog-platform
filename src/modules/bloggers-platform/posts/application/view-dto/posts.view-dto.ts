@@ -1,6 +1,13 @@
-import { TLikeDocument } from '../../../likes/domain/like.entity';
 import { ELikeStatus } from '../../../likes/constants/like-status';
-import { TPostDocument } from '../../domain/post.entity';
+import { IPostEntityDto } from '../../domain/dto/post.entity.dto';
+import { INewestLike } from '../../infrastructure/query/dto/newest-like.dto';
+
+export interface IPostWithDetails extends Omit<IPostEntityDto, 'deletedAt'> {
+  blogName: string;
+  likesCount: number;
+  dislikesCount: number;
+  myStatus: ELikeStatus;
+}
 
 class NewestLike {
   userId: string;
@@ -16,9 +23,8 @@ class ExtendedLikesInfo {
 }
 
 class Args {
-  post: TPostDocument;
-  newestLikes: TLikeDocument[];
-  myStatus: ELikeStatus;
+  post: IPostWithDetails;
+  newestLikes: INewestLike[];
 }
 
 export class PostViewDto {
@@ -28,13 +34,14 @@ export class PostViewDto {
   content: string;
   blogId: string;
   blogName: string;
-  extendedLikesInfo: ExtendedLikesInfo;
   createdAt: string;
+  extendedLikesInfo: ExtendedLikesInfo;
 
-  static mapToView({ post, newestLikes, myStatus }: Args): PostViewDto {
+  static mapToView(args: Args): PostViewDto {
+    const { post, newestLikes } = args;
     const dto = new PostViewDto();
 
-    dto.id = post._id.toString();
+    dto.id = post.id;
     dto.title = post.title;
     dto.shortDescription = post.shortDescription;
     dto.content = post.content;
@@ -43,13 +50,13 @@ export class PostViewDto {
     dto.createdAt = post.createdAt.toISOString();
 
     dto.extendedLikesInfo = {
-      likesCount: post.likesInfo.likesCount,
-      dislikesCount: post.likesInfo.dislikesCount,
-      myStatus: myStatus,
-      newestLikes: newestLikes.map((like) => ({
-        userId: like.authorId,
-        login: like.login,
-        addedAt: like.addedLikeDate?.toISOString() || '',
+      likesCount: post.likesCount,
+      dislikesCount: post.dislikesCount,
+      myStatus: post.myStatus,
+      newestLikes: newestLikes.map((item) => ({
+        login: item.login,
+        userId: item.userId,
+        addedAt: item.addedAt.toISOString(),
       })),
     };
 

@@ -1,6 +1,8 @@
 export const routersPaths = {
   root: '/',
   byId: ':id',
+  byPostId: ':postId',
+  sa: 'sa',
   auth: {
     root: 'auth',
     me: 'me',
@@ -14,7 +16,7 @@ export const routersPaths = {
     refreshToken: 'refresh-token',
   },
   users: {
-    root: 'sa/users',
+    root: 'users',
   },
   security: {
     root: 'security',

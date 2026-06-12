@@ -12,10 +12,4 @@ export class GetUsersQueryParamsDto extends BaseQueryParams {
 
   @IsOptionalString()
   searchEmailTerm: string | null = null;
-
-  getSortOptions() {
-    return {
-      [this.sortBy]: this.sortDirection,
-    };
-  }
 }
