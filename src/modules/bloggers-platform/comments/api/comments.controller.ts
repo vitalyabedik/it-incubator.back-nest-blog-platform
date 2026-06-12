@@ -10,18 +10,21 @@ import {
 } from '@nestjs/common';
 import { CommandBus, QueryBus } from '@nestjs/cqrs';
 import { ApiParam } from '@nestjs/swagger';
+
 import { routersPaths } from '../../../../core/constants/paths';
 import { ID_PARAMETER } from '../../../../core/constants/params';
-import { ObjectIdValidationPipe } from '../../../../core/pipes/object-id-validation-transformation-pipe.service';
+import { UUIDValidationPipe } from '../../../../core/pipes/uuid-validation-pipe';
+
 import { UseBearerGuard } from '../../../user-accounts/auth/guards/decorators/use-bearer-guard.decorator';
 import { UseOptionalBearerGuard } from '../../../user-accounts/auth/guards/decorators/use-optional-bearer-guard.decorator';
 import { ExtractUserFromRequest } from '../../../user-accounts/auth/guards/decorators/param/extract-user-from-request.decorator';
 import { Public } from '../../../user-accounts/auth/guards/decorators/public.decorator';
 import { UserFromRequestDataInputDto } from '../../../user-accounts/users/api/input-dto/user-from-request-data-input.dto';
 import { ExtractOptionalUserFromRequest } from '../../../user-accounts/auth/guards/decorators/param/extract-optional-user-from-request.decorator';
+
 import { CommentViewDto } from '../application/view-dto/comments.view-dto';
-import { GetCommentByIdQuery } from '../application/queries/get-comment-by-postId.query-handler';
-import { UpdateCommentCommand } from '../application/usecases/update-comment.usecase';
+import { GetCommentByIdQuery } from '../application/queries/get-comment-by-id.query-handler';
+import { UpdateCommentContentCommand } from '../application/usecases/update-comment-content.usecase';
 import { DeleteCommentCommand } from '../application/usecases/delete-comment.usecase';
 import { UpdateCommentLikeStatusCommand } from '../application/usecases/update-comment-like-status.usecase';
 import { UpdateCommentLikeStatusInputDto } from './input-dto/comment.update-like-status-input-dto';
@@ -41,25 +44,25 @@ export class CommentsController {
   @UseOptionalBearerGuard()
   @Public()
   async getCommentById(
-    @Param(ID_PARAMETER, ObjectIdValidationPipe) id: string,
+    @Param(ID_PARAMETER, UUIDValidationPipe) id: string,
     @ExtractOptionalUserFromRequest()
     userDto: UserFromRequestDataInputDto | null,
   ): Promise<CommentViewDto> {
     return this.queryBus.execute<GetCommentByIdQuery, CommentViewDto>(
-      new GetCommentByIdQuery(id, userDto),
+      new GetCommentByIdQuery({ commentId: id, userId: userDto?.userId }),
     );
   }
 
   @Put(routersPaths.byId)
   @ApiParam({ name: ID_PARAMETER })
   @HttpCode(HttpStatus.NO_CONTENT)
-  async updateComment(
-    @Param(ID_PARAMETER, ObjectIdValidationPipe) id: string,
+  async updateCommentContent(
+    @Param(ID_PARAMETER, UUIDValidationPipe) id: string,
     @Body() body: UpdateCommentInputDto,
     @ExtractUserFromRequest() userDto: UserFromRequestDataInputDto,
   ): Promise<void> {
-    return this.commandBus.execute<UpdateCommentCommand, void>(
-      new UpdateCommentCommand(id, { ...body, ...userDto }),
+    return this.commandBus.execute<UpdateCommentContentCommand, void>(
+      new UpdateCommentContentCommand({ id, ...body, ...userDto }),
     );
   }
 
@@ -67,12 +70,13 @@ export class CommentsController {
   @ApiParam({ name: ID_PARAMETER })
   @HttpCode(HttpStatus.NO_CONTENT)
   async updateCommentLikeStatus(
-    @Param(ID_PARAMETER, ObjectIdValidationPipe) id: string,
+    @Param(ID_PARAMETER, UUIDValidationPipe) id: string,
     @Body() body: UpdateCommentLikeStatusInputDto,
     @ExtractUserFromRequest() userDto: UserFromRequestDataInputDto,
   ): Promise<void> {
     return this.commandBus.execute<UpdateCommentLikeStatusCommand, void>(
-      new UpdateCommentLikeStatusCommand(id, {
+      new UpdateCommentLikeStatusCommand({
+        id,
         ...body,
         ...userDto,
       }),
@@ -83,11 +87,11 @@ export class CommentsController {
   @ApiParam({ name: ID_PARAMETER })
   @HttpCode(HttpStatus.NO_CONTENT)
   async deleteComment(
-    @Param(ID_PARAMETER, ObjectIdValidationPipe) id: string,
+    @Param(ID_PARAMETER, UUIDValidationPipe) id: string,
     @ExtractUserFromRequest() userDto: UserFromRequestDataInputDto,
   ): Promise<void> {
     return this.commandBus.execute<DeleteCommentCommand, void>(
-      new DeleteCommentCommand(id, userDto),
+      new DeleteCommentCommand({ id, ...userDto }),
     );
   }
 }

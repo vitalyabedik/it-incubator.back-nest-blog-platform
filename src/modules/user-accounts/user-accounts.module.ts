@@ -2,10 +2,7 @@ import { Module } from '@nestjs/common';
 import { JwtModule } from '@nestjs/jwt';
 import { ThrottlerModule } from '@nestjs/throttler';
 
-import {
-  ACCESS_TOKEN_STRATEGY_INJECT_TOKEN,
-  REFRESH_TOKEN_STRATEGY_INJECT_TOKEN,
-} from './auth/constants/tokens';
+import { DEFAULT_THROTTLE_OPTIONS } from '../../core/guards/app-throttle.guard';
 
 import { NotificationsModule } from '../notifications/notifications.module';
 
@@ -18,6 +15,10 @@ import { UsersFactory } from './users/application/factories/users.factory';
 import { GetUserByIdQueryHandler } from './users/application/queries/get-user-by-id.query-handler';
 import { GetUserListQueryHandler } from './users/application/queries/get-user-list.query-handler';
 
+import {
+  ACCESS_TOKEN_STRATEGY_INJECT_TOKEN,
+  REFRESH_TOKEN_STRATEGY_INJECT_TOKEN,
+} from './auth/constants/tokens';
 import { BearerAuthGuard } from './auth/guards/bearer/bearer-auth.guard';
 import { OptionalBearerAuthGuard } from './auth/guards/bearer/optional-bearer-auth.guard';
 import { CryptoService } from './auth/application/services/crypto.service';
@@ -67,7 +68,7 @@ const queryHandlers = [
 
 @Module({
   imports: [
-    // ThrottlerModule.forRoot({ throttlers: [{ ttl: 10000, limit: 5 }] }),
+    ThrottlerModule.forRoot({ throttlers: [{ ...DEFAULT_THROTTLE_OPTIONS }] }),
     NotificationsModule,
     JwtModule,
   ],

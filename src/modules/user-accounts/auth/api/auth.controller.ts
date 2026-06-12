@@ -19,6 +19,7 @@ import {
   ClientInfoDto,
 } from '../../../../core/decorators/client-info/extract-client-info';
 import { ExtractCookies } from '../../../../core/decorators/cookies/extract-cookies';
+import { DEFAULT_THROTTLE_OPTIONS } from '../../../../core/guards/app-throttle.guard';
 
 import { ExtractUserFromRequest } from '../guards/decorators/param/extract-user-from-request.decorator';
 import { UseBearerGuard } from '../guards/decorators/use-bearer-guard.decorator';
@@ -41,7 +42,7 @@ import { UserFromRequestDataInputDto } from '../../users/api/input-dto/user-from
 import { LogoutUserCommand } from '../application/usecases/logout-user.usecase';
 import { RefreshTokenCommand } from '../application/usecases/refresh-token.usecase';
 
-// @AppThrottle({ limit: 5, ttl: 10_000 })
+@AppThrottle({ ...DEFAULT_THROTTLE_OPTIONS })
 @Controller(routersPaths.auth.root)
 export class AuthController {
   constructor(private readonly commandBus: CommandBus) {

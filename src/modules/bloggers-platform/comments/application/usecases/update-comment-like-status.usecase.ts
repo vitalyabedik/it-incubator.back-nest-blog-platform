@@ -1,15 +1,13 @@
-import { CommandBus, CommandHandler, ICommandHandler } from '@nestjs/cqrs';
+import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
 import { LikesRepository } from '../../../likes/infrastructure/likes.repository';
 import { CommentsRepository } from '../../infrastructure/comments.repository';
-import { UpdateCommentLikeStatusInputDto } from '../../api/input-dto/comment.update-like-status-input-dto';
-import { CreateCommentLikeCommand } from './create-comment-like.usecase';
-import { UpdateCommentLikeCommand } from './update-comment-like.usecase';
+import { IUpdateCommentLikeStatusDto } from '../dto/update-comment-like-status.dto';
+import { DomainException } from '../../../../../core/exceptions/domain-exceptions';
+import { EDomainExceptionCode } from '../../../../../core/exceptions/domain-exception-codes';
+import { errorMessages } from '../../constants/texts';
 
 export class UpdateCommentLikeStatusCommand {
-  constructor(
-    public commentId: string,
-    public dto: UpdateCommentLikeStatusInputDto,
-  ) {}
+  constructor(public dto: IUpdateCommentLikeStatusDto) {}
 }
 
 @CommandHandler(UpdateCommentLikeStatusCommand)
@@ -18,45 +16,28 @@ export class UpdateCommentLikeStatusUseCase implements ICommandHandler<
   boolean
 > {
   constructor(
-    private commandBus: CommandBus,
     private commentsRepository: CommentsRepository,
     private likesRepository: LikesRepository,
   ) {}
 
-  async execute({
-    commentId,
-    dto,
-  }: UpdateCommentLikeStatusCommand): Promise<boolean> {
-    const { login, userId, likeStatus } = dto;
+  async execute({ dto }: UpdateCommentLikeStatusCommand): Promise<boolean> {
+    const { id, likeStatus, userId } = dto;
 
-    const comment =
-      await this.commentsRepository.findCommentByIdOrThrow(commentId);
+    const comment = await this.commentsRepository.findCommentById(id);
 
-    const parentId = comment._id.toString();
-
-    const existingLike = await this.likesRepository.findLikeByFilter({
-      parentId,
-      authorId: userId,
-    });
-    if (!existingLike) {
-      return this.commandBus.execute(
-        new CreateCommentLikeCommand({
-          comment,
-          userId,
-          login,
-          likeStatus,
-        }),
-      );
+    if (!comment) {
+      throw new DomainException({
+        code: EDomainExceptionCode.NotFound,
+        message: errorMessages.notFound,
+      });
     }
 
-    if (likeStatus === existingLike.status) return true;
+    await this.likesRepository.updateCommentLike({
+      userId,
+      commentId: comment.id,
+      likeStatus,
+    });
 
-    return this.commandBus.execute(
-      new UpdateCommentLikeCommand({
-        like: existingLike,
-        comment,
-        likeStatus,
-      }),
-    );
+    return true;
   }
 }
