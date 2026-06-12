@@ -1,5 +1,4 @@
 import { Module } from '@nestjs/common';
-import { MongooseModule } from '@nestjs/mongoose';
 import { JwtModule } from '@nestjs/jwt';
 
 import { UserAccountsModule } from '../user-accounts/user-accounts.module';
@@ -16,7 +15,6 @@ import { UpdateBlogUseCase } from './blogs/application/usecases/update-blog.usec
 import { BlogsFactory } from './blogs/application/factories/blogs.factory';
 
 import { PostsController } from './posts/api/posts.controller';
-
 import { PostsQueryRepository } from './posts/infrastructure/query/posts.query-repository';
 import { PostsRepository } from './posts/infrastructure/posts.repository';
 import { GetPostByIdQueryHandler } from './posts/application/queries/get-post-by-id.query-handler';
@@ -25,30 +23,23 @@ import { GetPostListQueryHandler } from './posts/application/queries/get-post-li
 import { CreatePostUseCase } from './posts/application/usecases/create-post.usecase';
 import { DeletePostUseCase } from './posts/application/usecases/delete-post.usecase';
 import { UpdatePostUseCase } from './posts/application/usecases/update-post.usecase';
-import { UpdatePostLikeUseCase } from './posts/application/usecases/update-post-like.usecase';
 import { UpdatePostLikeStatusUseCase } from './posts/application/usecases/update-post-like-status.usecase';
-import { CreatePostLikeUseCase } from './posts/application/usecases/create-post-like.usecase';
 import { PostsFactory } from './posts/application/factories/posts.factory';
+import { GetCommentListByPostIdQueryHandler } from './posts/application/queries/get-comment-list-by-postId.query-handler';
+import { CreateCommentByPostIdUseCase } from './posts/application/usecases/create-comment-by-post-id.usecase';
 
 import { CommentsController } from './comments/api/comments.controller';
 import { CommentsQueryRepository } from './comments/infrastructure/query/comments.query-repository';
-import { CommentSchema, Comment } from './comments/domain/comment.entity';
-import { GetCommentListByPostIdQueryHandler } from './comments/application/queries/get-comment-list-by-postId.query-handler';
 import { CommentsRepository } from './comments/infrastructure/comments.repository';
-import { CommentsExternalRepository } from './comments/infrastructure/external/comments.external-repository';
-import { GetCommentByIdQueryHandler } from './comments/application/queries/get-comment-by-postId.query-handler';
-import { CreateCommentLikeUseCase } from './comments/application/usecases/create-comment-like.usecase';
-import { CreateCommentUseCase } from './comments/application/usecases/create-comment.usecase';
+import { GetCommentByIdQueryHandler } from './comments/application/queries/get-comment-by-id.query-handler';
+
 import { DeleteCommentUseCase } from './comments/application/usecases/delete-comment.usecase';
 import { UpdateCommentLikeStatusUseCase } from './comments/application/usecases/update-comment-like-status.usecase';
-import { UpdateCommentLikeUseCase } from './comments/application/usecases/update-comment-like.usecase';
-import { UpdateCommentUseCase } from './comments/application/usecases/update-comment.usecase';
+
+import { UpdateCommentContentUseCase } from './comments/application/usecases/update-comment-content.usecase';
 import { CommentsFactory } from './comments/application/factories/comments.factory';
 
-import { LikesExternalRepository } from './likes/infrastructure/external/likes-external.repository';
-import { Like, LikeSchema } from './likes/domain/like.entity';
 import { LikesRepository } from './likes/infrastructure/likes.repository';
-import { LikesFactory } from './likes/factories/likes.factory';
 
 const commandHandlers = [
   CreateBlogUseCase,
@@ -56,16 +47,12 @@ const commandHandlers = [
   DeleteBlogUseCase,
   CreatePostUseCase,
   UpdatePostUseCase,
-  CreatePostLikeUseCase,
-  UpdatePostLikeUseCase,
+  CreateCommentByPostIdUseCase,
   UpdatePostLikeStatusUseCase,
   DeletePostUseCase,
-  CreateCommentUseCase,
-  UpdateCommentUseCase,
+  UpdateCommentContentUseCase,
   DeleteCommentUseCase,
-  CreateCommentLikeUseCase,
   UpdateCommentLikeStatusUseCase,
-  UpdateCommentLikeUseCase,
 ];
 const queryHandlers = [
   GetBlogByIdQueryHandler,
@@ -78,12 +65,7 @@ const queryHandlers = [
 ];
 
 @Module({
-  imports: [
-    MongooseModule.forFeature([{ name: Comment.name, schema: CommentSchema }]),
-    MongooseModule.forFeature([{ name: Like.name, schema: LikeSchema }]),
-    JwtModule,
-    UserAccountsModule,
-  ],
+  imports: [JwtModule, UserAccountsModule],
   controllers: [
     SuperAdminBlogsController,
     BlogsController,
@@ -98,16 +80,12 @@ const queryHandlers = [
     BlogsQueryRepository,
     PostsQueryRepository,
     CommentsQueryRepository,
-
-    CommentsExternalRepository,
-    LikesExternalRepository,
     BlogsFactory,
     PostsFactory,
     CommentsFactory,
-    LikesFactory,
     ...commandHandlers,
     ...queryHandlers,
   ],
-  exports: [CommentsExternalRepository, LikesExternalRepository],
+  exports: [],
 })
 export class BloggersPlatformModule {}

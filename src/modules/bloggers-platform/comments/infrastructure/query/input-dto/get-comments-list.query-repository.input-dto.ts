@@ -1,7 +1,13 @@
-import { GetCommentsQueryParams } from '../../../api/input-dto/get-comments-query-params.input-dto';
+import { ESortDirection } from '../../../../../../core/dto/base.query-params.input-dto';
+import { ECommentsSortBy } from '../../../api/input-dto/comments-sort-by';
 
-export class GetCommentsListQueryRepositoryParams {
+export interface IGetCommentListQueryRepositoryParams {
   postId: string;
-  userId?: string;
-  query: GetCommentsQueryParams;
+  userId: string | undefined;
+  query: {
+    sortBy: ECommentsSortBy;
+    sortDirection: ESortDirection;
+    limit: number;
+    offset: number;
+  };
 }

@@ -2,28 +2,29 @@ import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
 import { DomainException } from '../../../../../core/exceptions/domain-exceptions';
 import { EDomainExceptionCode } from '../../../../../core/exceptions/domain-exception-codes';
 import { CommentsRepository } from '../../infrastructure/comments.repository';
+import { IUpdateCommentContentDto } from '../dto/update-comment-content.dto';
 import { errorMessages } from '../../constants/texts';
-import { IDeleteCommentDto } from '../dto/delete-comment.dto';
 
-export class DeleteCommentCommand {
-  constructor(public dto: IDeleteCommentDto) {}
+export class UpdateCommentContentCommand {
+  constructor(public dto: IUpdateCommentContentDto) {}
 }
 
-@CommandHandler(DeleteCommentCommand)
-export class DeleteCommentUseCase implements ICommandHandler<
-  DeleteCommentCommand,
+@CommandHandler(UpdateCommentContentCommand)
+export class UpdateCommentContentUseCase implements ICommandHandler<
+  UpdateCommentContentCommand,
   boolean
 > {
   constructor(private commentsRepository: CommentsRepository) {}
 
-  async execute({ dto }: DeleteCommentCommand): Promise<boolean> {
-    const { id, userId } = dto;
+  async execute({ dto }: UpdateCommentContentCommand): Promise<boolean> {
+    const { id, content, userId } = dto;
 
-    const isDeleted = await this.commentsRepository.softDelete({
-      userId,
+    const isUpdated = await this.commentsRepository.updateComment({
       commentId: id,
+      content,
+      userId,
     });
-    if (isDeleted) return true;
+    if (isUpdated) return true;
 
     const comment = await this.commentsRepository.findCommentById(id);
 

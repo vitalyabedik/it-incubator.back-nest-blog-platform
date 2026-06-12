@@ -9,9 +9,9 @@ import { EDomainExceptionCode } from '../exceptions/domain-exception-codes';
 import { DomainException } from '../exceptions/domain-exceptions';
 import { Reflector } from '@nestjs/core';
 
-const DEFAULT_THROTTLE_OPTIONS = {
-  limit: 5,
+export const DEFAULT_THROTTLE_OPTIONS = {
   ttl: 10_000,
+  limit: 5,
 };
 
 export const APP_THROTTLE_META_KEY = 'app_throttle';

@@ -1,10 +1,5 @@
 import { ELikeStatus } from '../../../likes/constants/like-status';
-import { TCommentDocument } from '../../domain/comment.entity';
-
-type TMapToViewArgs = {
-  comment: TCommentDocument;
-  myStatus: ELikeStatus;
-};
+import { ICommentsWithDetailsDto } from '../../infrastructure/query/input-dto/comment-with-details.dto';
 
 export class CommentatorInfo {
   userId: string;
@@ -20,24 +15,24 @@ class LikesInfo {
 export class CommentViewDto {
   id: string;
   content: string;
-  commentatorInfo: CommentatorInfo;
   createdAt: string;
+  commentatorInfo: CommentatorInfo;
   likesInfo: LikesInfo;
 
-  static mapToView({ comment, myStatus }: TMapToViewArgs): CommentViewDto {
+  static mapToView(comment: ICommentsWithDetailsDto): CommentViewDto {
     const dto = new CommentViewDto();
 
-    dto.id = comment._id.toString();
+    dto.id = comment.id;
     dto.content = comment.content;
-    dto.commentatorInfo = {
-      userId: comment.commentatorInfo.userId,
-      userLogin: comment.commentatorInfo.userLogin,
-    };
     dto.createdAt = comment.createdAt.toISOString();
+    dto.commentatorInfo = {
+      userId: comment.userId,
+      userLogin: comment.userLogin,
+    };
     dto.likesInfo = {
-      likesCount: comment.likesInfo.likesCount,
-      dislikesCount: comment.likesInfo.dislikesCount,
-      myStatus: myStatus,
+      likesCount: comment.likesCount,
+      dislikesCount: comment.dislikesCount,
+      myStatus: comment.myStatus,
     };
 
     return dto;
